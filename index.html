@@ -56,8 +56,8 @@
         let mainGroup = new THREE.Group();
         let isDragging = false, prevMouse = { x: 0, y: 0 };
 
-        // Configuration de tes 3 photos de départ
-const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
+        // Correction de la liste des photos
+        const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
         function init() {
             scene = new THREE.Scene();
@@ -72,19 +72,15 @@ const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
             const loader = new THREE.TextureLoader();
 
-            // Création de 600 éléments (Noyau + début des Anneaux)
             for (let i = 0; i < 600; i++) {
                 let size, textureURL, isVIP;
                 
                 if (i < 150) { 
-                    // --- LE NOYAU (VIP) ---
-                    size = 22; // +10px par rapport aux anneaux
+                    size = 22;
                     isVIP = true;
-                    // On utilise tes photos pour les 3 premières, sinon du Lorem Picsum
                     textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/150/150`;
                 } else {
-                    // --- LES ANNEAUX ---
-                    size = 12; // Taille standard
+                    size = 12;
                     isVIP = false;
                     textureURL = `https://picsum.photos/id/${i+100}/150/150`;
                 }
@@ -99,14 +95,12 @@ const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
                 const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
                 
                 if (isVIP) { 
-                    // Placement dans la sphère centrale
                     const dist = Math.random() * 110;
                     const t = Math.random() * Math.PI * 2;
                     const p = Math.random() * Math.PI;
                     plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
                     plane.lookAt(0,0,0);
                 } else {
-                    // Placement dans les anneaux
                     const angle = Math.random() * Math.PI * 2;
                     const radius = 180 + Math.random() * 350;
                     plane.position.x = Math.cos(angle) * radius;
@@ -119,7 +113,6 @@ const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
                 mainGroup.add(plane);
             }
 
-            // Événements Souris / Touch
             window.addEventListener('mousedown', () => isDragging = true);
             window.addEventListener('mouseup', () => isDragging = false);
             window.addEventListener('mousemove', (e) => {
@@ -134,12 +127,15 @@ const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
             window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
 
+            // AJOUT DE LA NETTETÉ AU CLIC SANS FAIRE BUGGER LA GALAXIE
             window.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'CANVAS') return;
                 raycaster.setFromCamera(mouse, camera);
                 const intersects = raycaster.intersectObjects(mainGroup.children);
                 if (intersects.length > 0) {
-                    document.getElementById('zoom-img').src = intersects[0].object.userData.hd;
+                    const imgElement = document.getElementById('zoom-img');
+                    // On charge l'URL HD
+                    imgElement.src = intersects[0].object.userData.hd;
                     document.getElementById('preview-box').style.display = 'block';
                 }
             });
