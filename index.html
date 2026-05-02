@@ -21,10 +21,18 @@
 
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 300px; background: rgba(0,0,0,0.95); border: 2px solid #ffcc00;
+            width: 320px; background: rgba(0,0,0,0.95); border: 2px solid #ffcc00;
             padding: 15px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
         }
-        #preview-box img { width: 100%; border-radius: 10px; }
+        /* Style pour forcer la netteté de l'image au clic */
+        #zoom-img { 
+            width: 100%; 
+            border-radius: 10px; 
+            image-rendering: auto; 
+            display: block;
+            margin-bottom: 10px;
+        }
 
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
         .pay-btn {
@@ -37,13 +45,13 @@
 </head>
 <body>
 
-    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Photos larges (22px).\n- ANNEAUX : Photos standards (12px).\n- NAVIGATION : Glissez pour tourner, Scrollez pour zoomer.')">i</div>
+    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Photos larges.\n- ANNEAUX : Photos standards.\n- NAVIGATION : Glissez pour tourner, Scrollez pour zoomer.')">i</div>
     <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000 PLACES</div>
 
     <div id="preview-box">
         <img id="zoom-img" src="">
-        <p style="color:#ffcc00">★ MEMBRE FONDATEUR ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="margin-top:10px; width:100%; background:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">RETOUR</button>
+        <p style="color:#ffcc00; margin: 5px 0;">★ MEMBRE FONDATEUR ★</p>
+        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">RETOUR</button>
     </div>
 
     <div id="ui">
@@ -56,7 +64,6 @@
         let mainGroup = new THREE.Group();
         let isDragging = false, prevMouse = { x: 0, y: 0 };
 
-        // Correction de la liste des photos
         const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
         function init() {
@@ -66,6 +73,7 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // Améliore la netteté générale du canvas
             document.body.appendChild(renderer.domElement);
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
@@ -127,16 +135,23 @@
 
             window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
 
-            // AJOUT DE LA NETTETÉ AU CLIC SANS FAIRE BUGGER LA GALAXIE
+            // CLIC POUR AFFICHAGE HAUTE QUALITÉ
             window.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'CANVAS') return;
                 raycaster.setFromCamera(mouse, camera);
                 const intersects = raycaster.intersectObjects(mainGroup.children);
                 if (intersects.length > 0) {
+                    const clickedObj = intersects[0].object;
                     const imgElement = document.getElementById('zoom-img');
-                    // On charge l'URL HD
-                    imgElement.src = intersects[0].object.userData.hd;
-                    document.getElementById('preview-box').style.display = 'block';
+                    
+                    // On charge l'image source sans la compression de Three.js
+                    const highResLoader = new Image();
+                    highResLoader.src = clickedObj.userData.hd;
+                    
+                    highResLoader.onload = () => {
+                        imgElement.src = highResLoader.src;
+                        document.getElementById('preview-box').style.display = 'block';
+                    };
                 }
             });
 
