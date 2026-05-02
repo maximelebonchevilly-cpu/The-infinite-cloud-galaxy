@@ -74,7 +74,7 @@
 
         function init() {
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 15000);
             camera.position.set(0, 150, 400);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -84,14 +84,19 @@
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
 
-            // --- FOND ÉTOILÉ ---
+            // --- FOND INFINI (NÉBULEUSE ET ÉTOILES) ---
+            const loaderSky = new THREE.TextureLoader();
+            const spaceTexture = loaderSky.load('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=2048&q=80');
+            spaceTexture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.background = spaceTexture;
+
             const starGeometry = new THREE.BufferGeometry();
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8 });
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.6, transparent: true, opacity: 0.8 });
             const starVertices = [];
-            for (let i = 0; i < 10000; i++) {
-                const x = (Math.random() - 0.5) * 4000;
-                const y = (Math.random() - 0.5) * 4000;
-                const z = (Math.random() - 0.5) * 4000;
+            for (let i = 0; i < 15000; i++) {
+                const x = (Math.random() - 0.5) * 12000;
+                const y = (Math.random() - 0.5) * 12000;
+                const z = (Math.random() - 0.5) * 12000;
                 starVertices.push(x, y, z);
             }
             starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
@@ -135,7 +140,7 @@
                 mainGroup.add(plane);
             }
 
-            // --- MOBILE EVENTS (ZOOM & ROTATION) ---
+            // --- MOBILE EVENTS ---
             window.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
@@ -152,7 +157,7 @@
             window.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && initialPinchDistance) {
                     const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    camera.position.z += (initialPinchDistance - currentDistance) * 0.6;
+                    camera.position.z += (initialPinchDistance - currentDistance) * 0.8;
                     initialPinchDistance = currentDistance;
                 } else if (isDragging && e.touches.length === 1) {
                     mainGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.005;
@@ -173,7 +178,7 @@
             });
             window.addEventListener('mousedown', () => isDragging = true);
             window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.4; });
+            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
             window.addEventListener('click', handleSelect);
             window.addEventListener('touchend', (e) => { if(!isDragging && e.touches.length === 0) handleSelect(e); });
 
