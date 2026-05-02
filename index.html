@@ -21,17 +21,21 @@
 
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 320px; background: rgba(0,0,0,0.95); border: 2px solid #ffcc00;
-            padding: 15px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
-            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+            width: 350px; background: rgba(0,0,0,0.98); border: 2px solid #ffcc00;
+            padding: 20px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
         }
-        /* Style pour forcer la netteté de l'image au clic */
+
+        /* Correction Qualité Image */
         #zoom-img { 
             width: 100%; 
+            height: auto;
             border-radius: 10px; 
-            image-rendering: auto; 
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            /* Force le navigateur à utiliser la meilleure résolution possible */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: auto;
         }
 
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
@@ -50,8 +54,8 @@
 
     <div id="preview-box">
         <img id="zoom-img" src="">
-        <p style="color:#ffcc00; margin: 5px 0;">★ MEMBRE FONDATEUR ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">RETOUR</button>
+        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ MEMBRE FONDATEUR ★</p>
+        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer; margin-top: 10px;">RETOUR</button>
     </div>
 
     <div id="ui">
@@ -71,9 +75,9 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
             camera.position.set(0, 150, 400);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio); // Améliore la netteté générale du canvas
+            renderer.setPixelRatio(window.devicePixelRatio); 
             document.body.appendChild(renderer.domElement);
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
@@ -86,7 +90,7 @@
                 if (i < 150) { 
                     size = 22;
                     isVIP = true;
-                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/150/150`;
+                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/300/300`;
                 } else {
                     size = 12;
                     isVIP = false;
@@ -117,6 +121,7 @@
                     plane.lookAt(0, plane.position.y, 0);
                 }
                 
+                // On stocke l'URL brute pour la réutiliser au clic
                 plane.userData = { hd: textureURL };
                 mainGroup.add(plane);
             }
@@ -135,7 +140,7 @@
 
             window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
 
-            // CLIC POUR AFFICHAGE HAUTE QUALITÉ
+            // CLIC POUR AFFICHAGE HAUTE QUALITÉ (CORRIGÉ)
             window.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'CANVAS') return;
                 raycaster.setFromCamera(mouse, camera);
@@ -144,12 +149,15 @@
                     const clickedObj = intersects[0].object;
                     const imgElement = document.getElementById('zoom-img');
                     
-                    // On charge l'image source sans la compression de Three.js
-                    const highResLoader = new Image();
-                    highResLoader.src = clickedObj.userData.hd;
+                    // On vide l'ancienne image pour éviter le flash
+                    imgElement.src = "";
+
+                    // On recharge l'image originale proprement
+                    const imgLoader = new Image();
+                    imgLoader.src = clickedObj.userData.hd;
                     
-                    highResLoader.onload = () => {
-                        imgElement.src = highResLoader.src;
+                    imgLoader.onload = () => {
+                        imgElement.src = imgLoader.src;
                         document.getElementById('preview-box').style.display = 'block';
                     };
                 }
