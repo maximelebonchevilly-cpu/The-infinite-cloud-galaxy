@@ -19,9 +19,9 @@
         }
         #info-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; max-width: 420px; background: rgba(0,0,0,0.98); border: 2px solid #00d4ff;
+            width: 85%; max-width: 400px; background: rgba(0,0,0,0.95); border: 2px solid #00d4ff;
             padding: 25px; border-radius: 20px; z-index: 7000; display: none; text-align: left;
-            line-height: 1.6; font-size: 14px; box-shadow: 0 0 50px rgba(0, 212, 255, 0.4);
+            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
         }
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -36,7 +36,7 @@
             box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .close-btn { background: #00d4ff; color: black; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
+        .close-btn { background: #00d4ff; color: black; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -45,31 +45,22 @@
     <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
 
     <div id="info-modal">
-        <h2 style="color:#00d4ff; margin-top:0; text-align: center;">INFOS UTILES 🚀</h2>
-        
-        <p><b>✨ Le Projet :</b> Actuellement, les 5000 places disponibles sont situées exclusivement dans le <b>Noyau Central</b> et le <b>premier anneau</b> de la galaxie.</p>
-        
-        <p><b>📝 Inscription :</b> Une fois le paiement effectué, un <b>formulaire de membre</b> apparaîtra. C'est là que tu pourras nous envoyer ta photo et ton lien personnel pour apparaître dans la galaxie.</p>
-        
-        <p><b>🌌 L'Avenir :</b> Ce n'est que la première étape. Plus tard, nous allons créer un <b>système solaire complet</b>, une ceinture d'astéroïdes, et même intégrer <b>Hubble</b> qui suivra sa trajectoire réelle dans l'espace.</p>
-        
-        <p style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; font-size: 13px;">
-            <b>Commandes Mobile :</b><br>
-            • Tourner : 1 doigt<br>
-            • Zoomer / Dézoomer : Pincer avec 2 doigts
-        </p>
-
-        <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">Fermer</button>
+        <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
+        <p><b>📍 Concept :</b> 5000 spots for eternity. (5000 places pour l'éternité).</p>
+        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star. (Paiement (1€) -> Formulaire -> Ton étoile).</p>
+        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking. (Prochainement : Système solaire et suivi Hubble en direct).</p>
+        <p><b>📱 Controls :</b> 1 finger to rotate / 2 fingers to zoom. (1 doigt pour tourner / 2 doigts pour zoomer).</p>
+        <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">CLOSE / FERMER</button>
     </div>
 
     <div id="preview-box">
         <img id="zoom-img" src="">
-        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ MEMBRE FONDATEUR ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">RETOUR</button>
+        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ FOUNDING MEMBER ★</p>
+        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">BACK</button>
     </div>
 
     <div id="ui">
-        <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">REJOINDRE LE NOYAU (1€)</button>
+        <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -92,6 +83,19 @@
             document.body.appendChild(renderer.domElement);
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
+
+            // --- FOND ÉTOILÉ ---
+            const starGeometry = new THREE.BufferGeometry();
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8 });
+            const starVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 4000;
+                const y = (Math.random() - 0.5) * 4000;
+                const z = (Math.random() - 0.5) * 4000;
+                starVertices.push(x, y, z);
+            }
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            scene.add(new THREE.Points(starGeometry, starMaterial));
 
             const loader = new THREE.TextureLoader();
             const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -131,20 +135,7 @@
                 mainGroup.add(plane);
             }
 
-            // --- PC (SOURIS) ---
-            window.addEventListener('mousedown', () => isDragging = true);
-            window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
-                }
-                prevMouse = { x: e.clientX, y: e.clientY };
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-            });
-
-            // --- MOBILE (TOUCH & PINCH) ---
+            // --- MOBILE EVENTS (ZOOM & ROTATION) ---
             window.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
@@ -156,16 +147,12 @@
                 }
             }, { passive: false });
 
-            window.addEventListener('touchend', () => { 
-                isDragging = false; 
-                initialPinchDistance = null;
-            });
+            window.addEventListener('touchend', () => { isDragging = false; initialPinchDistance = null; });
 
             window.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && initialPinchDistance) {
                     const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    const diff = initialPinchDistance - currentDistance;
-                    camera.position.z += diff * 1.5; // Zoom sensible
+                    camera.position.z += (initialPinchDistance - currentDistance) * 0.6;
                     initialPinchDistance = currentDistance;
                 } else if (isDragging && e.touches.length === 1) {
                     mainGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.005;
@@ -175,8 +162,18 @@
                 e.preventDefault(); 
             }, { passive: false });
 
-            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
-
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
+                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
+                }
+                prevMouse = { x: e.clientX, y: e.clientY };
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+            window.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.4; });
             window.addEventListener('click', handleSelect);
             window.addEventListener('touchend', (e) => { if(!isDragging && e.touches.length === 0) handleSelect(e); });
 
@@ -190,7 +187,6 @@
                     document.getElementById('preview-box').style.display = 'block';
                 }
             }
-
             animate();
         }
 
