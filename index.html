@@ -2,10 +2,16 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>THE CORE - NEBULA IMMERSION</title>
+    <title>THE CORE 5000 - VOLUMETRIC SPACE</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; touch-action: none; }
-        #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; touch-action: none; }
+        #info-btn {
+            position: fixed; top: 20px; right: 20px; width: 45px; height: 45px;
+            background: #00d4ff; border: 2px solid white; border-radius: 50%; color: black;
+            font-size: 22px; font-weight: bold; cursor: pointer; z-index: 5000;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px #00d4ff;
+        }
+        #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 100%; text-align: center; }
         .pay-btn {
             background: #fff; color: #000; padding: 15px 30px; border-radius: 50px;
             font-size: 18px; font-weight: 900; cursor: pointer; border: none;
@@ -16,99 +22,106 @@
 </head>
 <body>
 
+    <div id="info-btn" onclick="alert('Zoom pour entrer dans les nuages !')">i</div>
     <div id="ui">
         <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, cloudParticles = [];
+        let scene, camera, renderer;
         let mainGroup = new THREE.Group();
+        let cloudParticles = [];
         let isDragging = false, prevMouse = { x: 0, y: 0 };
 
         function init() {
             scene = new THREE.Scene();
-            // Brouillard très dense pour l'effet de profondeur
-            scene.fog = new THREE.FogExp2(0x00111a, 0.001);
+            // Ajout de brouillard pour la profondeur
+            scene.fog = new THREE.FogExp2(0x030310, 0.0005);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
-            camera.position.z = 800;
+            camera.position.z = 1000;
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(scene.fog.color);
             document.body.appendChild(renderer.domElement);
 
-            const ambient = new THREE.AmbientLight(0x555555);
+            // Lumières pour éclairer les nuages de l'intérieur
+            let ambient = new THREE.AmbientLight(0x555555);
             scene.add(ambient);
 
-            const light = new THREE.PointLight(0x00d4ff, 50, 1000);
-            light.position.set(0, 0, 200);
-            scene.add(light);
+            let directionalLight = new THREE.DirectionalLight(0xffeedd);
+            directionalLight.position.set(0,0,1);
+            scene.add(directionalLight);
 
-            // --- NUAGES VOLUMÉTRIQUES (VRAIE MÉTHODE) ---
-            const loader = new THREE.TextureLoader();
-            // Utilisation d'une texture de fumée circulaire pour éviter les "carrés"
+            // --- CRÉATION DES NUAGES VOLUMÉTRIQUES ---
+            let loader = new THREE.TextureLoader();
+            // Utilisation d'une texture de nuage isolée (sprite)
             loader.load("https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/terrain/cloud.png", function(texture){
-                const cloudGeo = new THREE.PlaneGeometry(800, 800);
+                const cloudGeo = new THREE.PlaneGeometry(500, 500);
                 const cloudMat = new THREE.MeshLambertMaterial({
                     map: texture,
                     transparent: true,
-                    opacity: 0.25,
-                    depthWrite: false,
-                    blending: THREE.AdditiveBlending // Pour que les nuages brillent en se superposant
+                    opacity: 0.4,
+                    depthWrite: false // Permet de voir à travers plusieurs couches
                 });
 
-                for(let p=0; p<40; p++) {
-                    const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+                for(let p=0; p<50; p++) {
+                    let cloud = new THREE.Mesh(cloudGeo, cloudMat);
+                    // On les place partout dans l'espace 3D
                     cloud.position.set(
-                        Math.random()*1500 - 750,
+                        Math.random()*2000 - 1000,
                         Math.random()*1000 - 500,
-                        Math.random()*2000 - 1000
+                        Math.random()*2000 - 1500
                     );
-                    cloud.rotation.z = Math.random()*Math.PI;
-                    cloud.material.color.setHSL(0.5, 0.8, 0.4); // Teinte Cyan/Bleu
+                    cloud.rotation.z = Math.random()*360;
+                    cloud.material.color.setHSL(0.6, 0.2, Math.random() * 0.2 + 0.1); // Teinte bleutée
                     cloudParticles.push(cloud);
                     scene.add(cloud);
                 }
             });
 
-            // --- ÉTOILES SCINTILLANTES ---
-            const starGeo = new THREE.BufferGeometry();
-            const starCoords = [];
-            for(let i=0; i<5000; i++) {
-                starCoords.push(Math.random()*4000-2000, Math.random()*4000-2000, Math.random()*4000-2000);
-            }
-            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-            const starMat = new THREE.PointsMaterial({color: 0xffffff, size: 1.5});
-            scene.add(new THREE.Points(starGeo, starMat));
-
-            // --- TA GALAXIE VIP ---
-            const vipGeo = new THREE.PlaneGeometry(40, 40);
-            for(let i=0; i<300; i++) {
-                const vipMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.9, side: THREE.DoubleSide });
-                const m = new THREE.Mesh(vipGeo, vipMat);
+            // --- TA GALAXIE CENTRALE (VIP) ---
+            for (let i = 0; i < 200; i++) {
+                const geo = new THREE.PlaneGeometry(30, 30);
+                const mat = new THREE.MeshBasicMaterial({ 
+                    color: 0x00d4ff, 
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const p = new THREE.Mesh(geo, mat);
+                const dist = Math.random() * 200;
                 const angle = Math.random() * Math.PI * 2;
-                const radius = Math.random() * 250;
-                m.position.set(Math.cos(angle)*radius, (Math.random()-0.5)*100, Math.sin(angle)*radius);
-                m.lookAt(0,0,0);
-                mainGroup.add(m);
+                p.position.set(Math.cos(angle)*dist, (Math.random()-0.5)*50, Math.sin(angle)*dist);
+                p.lookAt(0,0,0);
+                mainGroup.add(p);
             }
             scene.add(mainGroup);
 
-            // --- ÉVÉNEMENTS ---
-            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY; });
-            
-            // Mobile Zoom
+            // --- CONTRÔLES ---
+            window.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => {
+                if(isDragging) {
+                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
+                    camera.position.x += (e.clientX - prevMouse.x) * 0.5;
+                }
+                prevMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('wheel', (e) => {
+                // Ici, on avance RÉELLEMENT dans la scène
+                camera.position.z += e.deltaY;
+            });
+
+            // Support Mobile (Zoom = Avancer dans le nuage)
             let initialDist = 0;
             window.addEventListener('touchmove', (e) => {
                 if(e.touches.length === 2) {
                     let d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    if(initialDist > 0) camera.position.z -= (d - initialDist) * 3;
+                    if(initialDist > 0) camera.position.z -= (d - initialDist) * 2;
                     initialDist = d;
-                }
-                if(e.touches.length === 1) {
-                    mainGroup.rotation.y += 0.01;
                 }
             });
 
@@ -116,10 +129,12 @@
         }
 
         function animate() {
+            // Petite rotation des nuages pour les rendre vivants
             cloudParticles.forEach(p => {
                 p.rotation.z -= 0.001;
             });
-            mainGroup.rotation.y += 0.001;
+            
+            mainGroup.rotation.y += 0.002;
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
