@@ -2,33 +2,15 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>THE CORE 5000 - SATURN PROJECT</title>
+    <title>THE CORE 5000 - VOLUMETRIC SPACE</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: white; touch-action: none; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; touch-action: none; }
         #info-btn {
             position: fixed; top: 20px; right: 20px; width: 45px; height: 45px;
             background: #00d4ff; border: 2px solid white; border-radius: 50%; color: black;
             font-size: 22px; font-weight: bold; cursor: pointer; z-index: 5000;
             display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px #00d4ff;
         }
-        #vip-counter {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 8px 20px; 
-            border-radius: 50px; font-weight: bold; z-index: 1000; box-shadow: 0 0 20px #ff0055;
-            font-size: 14px; white-space: nowrap;
-        }
-        #info-modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; max-width: 400px; background: rgba(0,0,0,0.95); border: 2px solid #00d4ff;
-            padding: 25px; border-radius: 20px; z-index: 7000; display: none; text-align: left;
-            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
-        }
-        #preview-box {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; max-width: 350px; background: rgba(0,0,0,0.98); border: 2px solid #ffcc00;
-            padding: 20px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
-        }
-        #zoom-img { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px; image-rendering: high-quality; }
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 100%; text-align: center; }
         .pay-btn {
             background: #fff; color: #000; padding: 15px 30px; border-radius: 50px;
@@ -36,200 +18,126 @@
             box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .close-btn { background: #00d4ff; color: black; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
-    <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
-
-    <div id="info-modal">
-        <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
-        <p><b>📍 Concept :</b> 5000 spots for eternity. (5000 places pour l'éternité).</p>
-        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star. (Paiement (1€) -> Formulaire -> Ton étoile).</p>
-        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking. (Prochainement : Système solaire et suivi Hubble en direct).</p>
-        <p><b>📱 Controls :</b> 1 finger to rotate / 2 fingers to zoom. (1 doigt pour tourner / 2 doigts pour zoomer).</p>
-        <p><b>✨ Explore :</b> Use zoom to go inside the nebula. (Utilise le zoom pour aller dans la nébuleuse).</p>
-        <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">CLOSE / FERMER</button>
-    </div>
-
-    <div id="preview-box">
-        <img id="zoom-img" src="">
-        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ FOUNDING MEMBER ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">BACK</button>
-    </div>
-
+    <div id="info-btn" onclick="alert('Zoom pour entrer dans les nuages !')">i</div>
     <div id="ui">
         <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, raycaster, mouse = new THREE.Vector2();
+        let scene, camera, renderer;
         let mainGroup = new THREE.Group();
-        let skyGroup = new THREE.Group(); // Groupe séparé pour le fond 3D
+        let cloudParticles = [];
         let isDragging = false, prevMouse = { x: 0, y: 0 };
-        let initialPinchDistance = null;
-
-        const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
         function init() {
             scene = new THREE.Scene();
-            // Augmentation considérable de la distance de vue pour le fond 3D
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 30000);
-            camera.position.set(0, 150, 400);
+            // Ajout de brouillard pour la profondeur
+            scene.fog = new THREE.FogExp2(0x030310, 0.0005);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.body.appendChild(renderer.domElement);
-            scene.add(mainGroup);
-            scene.add(skyGroup); // Ajout du groupe de fond
-            raycaster = new THREE.Raycaster();
 
-            // --- FOND 3D INTERACTIF (NÉBULEUSE SPHÉRIQUE) ---
-            const loaderSky = new THREE.TextureLoader();
-            // Chargement de l'image de la nébuleuse
-            const spaceTexture = loaderSky.load('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=2048&q=80');
-            spaceTexture.mapping = THREE.EquirectangularReflectionMapping;
+            // Lumières pour éclairer les nuages de l'intérieur
+            let ambient = new THREE.AmbientLight(0x555555);
+            scene.add(ambient);
 
-            // Création d'une sphère géante pour projeter la texture à l'intérieur
-            const skyGeometry = new THREE.SphereGeometry(15000, 60, 40);
-            // Inversion de la géométrie pour que la texture soit visible de l'intérieur
-            skyGeometry.scale(-1, 1, 1); 
-            const skyMaterial = new THREE.MeshBasicMaterial({ map: spaceTexture });
-            const skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-            skyGroup.add(skyMesh); // Ajout au groupe dédié
+            let directionalLight = new THREE.DirectionalLight(0xffeedd);
+            directionalLight.position.set(0,0,1);
+            scene.add(directionalLight);
 
-            // --- ÉTOILES DE FOND POUR LE RELIEF ---
-            const starGeometry = new THREE.BufferGeometry();
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.9 });
-            const starVertices = [];
-            for (let i = 0; i < 20000; i++) {
-                const x = (Math.random() - 0.5) * 25000;
-                const y = (Math.random() - 0.5) * 25000;
-                const z = (Math.random() - 0.5) * 25000;
-                starVertices.push(x, y, z);
-            }
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-            skyGroup.add(new THREE.Points(starGeometry, starMaterial));
+            // --- CRÉATION DES NUAGES VOLUMÉTRIQUES ---
+            let loader = new THREE.TextureLoader();
+            // Utilisation d'une texture de nuage isolée (sprite)
+            loader.load("https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/terrain/cloud.png", function(texture){
+                const cloudGeo = new THREE.PlaneGeometry(500, 500);
+                const cloudMat = new THREE.MeshLambertMaterial({
+                    map: texture,
+                    transparent: true,
+                    opacity: 0.4,
+                    depthWrite: false // Permet de voir à travers plusieurs couches
+                });
 
-            // --- OBJETS VIP (VOTRE GALAXIE EXISTANTE) ---
-            const loader = new THREE.TextureLoader();
-            const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-
-            for (let i = 0; i < 600; i++) {
-                let size, textureURL, isVIP;
-                if (i < 150) { 
-                    size = 24; isVIP = true;
-                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/500/500`;
-                } else {
-                    size = 14; isVIP = false;
-                    textureURL = `https://picsum.photos/id/${i+100}/200/200`;
+                for(let p=0; p<50; p++) {
+                    let cloud = new THREE.Mesh(cloudGeo, cloudMat);
+                    // On les place partout dans l'espace 3D
+                    cloud.position.set(
+                        Math.random()*2000 - 1000,
+                        Math.random()*1000 - 500,
+                        Math.random()*2000 - 1500
+                    );
+                    cloud.rotation.z = Math.random()*360;
+                    cloud.material.color.setHSL(0.6, 0.2, Math.random() * 0.2 + 0.1); // Teinte bleutée
+                    cloudParticles.push(cloud);
+                    scene.add(cloud);
                 }
-
-                const texture = loader.load(textureURL);
-                texture.anisotropy = maxAnisotropy;
-                texture.minFilter = THREE.LinearFilter;
-
-                const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: !isVIP, opacity: isVIP ? 1 : 0.7 });
-                const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
-                
-                if (isVIP) { 
-                    const dist = Math.random() * 120;
-                    const t = Math.random() * Math.PI * 2;
-                    const p = Math.random() * Math.PI;
-                    plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
-                    plane.lookAt(0,0,0);
-                } else {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 200 + Math.random() * 350;
-                    plane.position.x = Math.cos(angle) * radius;
-                    plane.position.z = Math.sin(angle) * radius;
-                    plane.position.y = (Math.random() - 0.5) * 40;
-                    plane.lookAt(0, plane.position.y, 0);
-                }
-                plane.userData = { hd: textureURL };
-                mainGroup.add(plane);
-            }
-
-            // --- GESTION TOUCHER & SOURIS (AMÉLIORÉE POUR LE FOND) ---
-            window.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                } else {
-                    isDragging = true;
-                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    mouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
-                    mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-                }
-            }, { passive: false });
-
-            window.addEventListener('touchend', () => { isDragging = false; initialPinchDistance = null; });
-
-            window.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && initialPinchDistance) {
-                    const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    // Le zoom déplace la caméra pour aller "dedans"
-                    camera.position.z += (initialPinchDistance - currentDistance) * 1.0; 
-                    initialPinchDistance = currentDistance;
-                } else if (isDragging && e.touches.length === 1) {
-                    // La rotation fait tourner le fond ET la galaxie VIP
-                    mainGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.touches[0].clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.001; // Le fond tourne plus lentement
-                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
-                e.preventDefault(); 
-            }, { passive: false });
-
-            window.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.clientX - prevMouse.x) * 0.001;
-                }
-                prevMouse = { x: e.clientX, y: e.clientY };
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             });
+
+            // --- TA GALAXIE CENTRALE (VIP) ---
+            for (let i = 0; i < 200; i++) {
+                const geo = new THREE.PlaneGeometry(30, 30);
+                const mat = new THREE.MeshBasicMaterial({ 
+                    color: 0x00d4ff, 
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const p = new THREE.Mesh(geo, mat);
+                const dist = Math.random() * 200;
+                const angle = Math.random() * Math.PI * 2;
+                p.position.set(Math.cos(angle)*dist, (Math.random()-0.5)*50, Math.sin(angle)*dist);
+                p.lookAt(0,0,0);
+                mainGroup.add(p);
+            }
+            scene.add(mainGroup);
+
+            // --- CONTRÔLES ---
             window.addEventListener('mousedown', () => isDragging = true);
             window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('wheel', (e) => { 
-                camera.position.z += e.deltaY * 1.0; 
-            });
-            window.addEventListener('click', handleSelect);
-            window.addEventListener('touchend', (e) => { if(!isDragging && e.touches.length === 0) handleSelect(e); });
-
-            function handleSelect(e) {
-                if (e.target.tagName !== 'CANVAS') return;
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(mainGroup.children);
-                if (intersects.length > 0) {
-                    const imgElement = document.getElementById('zoom-img');
-                    imgElement.src = intersects[0].object.userData.hd;
-                    document.getElementById('preview-box').style.display = 'block';
+            window.addEventListener('mousemove', (e) => {
+                if(isDragging) {
+                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
+                    camera.position.x += (e.clientX - prevMouse.x) * 0.5;
                 }
-            }
+                prevMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('wheel', (e) => {
+                // Ici, on avance RÉELLEMENT dans la scène
+                camera.position.z += e.deltaY;
+            });
+
+            // Support Mobile (Zoom = Avancer dans le nuage)
+            let initialDist = 0;
+            window.addEventListener('touchmove', (e) => {
+                if(e.touches.length === 2) {
+                    let d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    if(initialDist > 0) camera.position.z -= (d - initialDist) * 2;
+                    initialDist = d;
+                }
+            });
+
             animate();
         }
 
         function animate() {
-            requestAnimationFrame(animate);
-            if(!isDragging) {
-                mainGroup.rotation.y += 0.0008;
-                skyGroup.rotation.y += 0.0001; // Rotation lente du fond
-            }
-            camera.lookAt(0,0,0);
+            // Petite rotation des nuages pour les rendre vivants
+            cloudParticles.forEach(p => {
+                p.rotation.z -= 0.001;
+            });
+            
+            mainGroup.rotation.y += 0.002;
             renderer.render(scene, camera);
+            requestAnimationFrame(animate);
         }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
 
         init();
     </script>
