@@ -4,210 +4,175 @@
     <meta charset="UTF-8">
     <title>THE INFINITE CLOUD GALAXY</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: white; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
         
-        /* Interface de paiement stylée */
-        #ui { 
-            position: fixed; 
-            bottom: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 100; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 30px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .pay-btn { 
-            background: white; 
-            border: none; 
-            color: black; 
-            padding: 18px 40px; 
-            border-radius: 50px; 
-            font-size: 18px;
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 30px rgba(255,255,255,0.2);
-        }
-        
-        .pay-btn:hover {
-            transform: scale(1.05);
-            background: #eee;
-        }
-
-        .pay-btn:active {
-            transform: scale(0.95);
-        }
-
-        .count-info {
-            font-size: 14px;
-            opacity: 0.7;
-        }
-
-        /* Cadre blanc subtil autour du site pour faire "objet" */
-        #frame {
+        /* Bouton Info en haut à droite */
+        #info-btn {
             position: fixed;
             top: 20px;
-            left: 20px;
             right: 20px;
-            bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            pointer-events: none;
-            z-index: 50;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
+
+        /* Panneau d'explication */
+        #info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid white;
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 400;
+            display: none; /* Caché par défaut */
+            text-align: center;
+        }
+
+        #info-panel h2 { margin-top: 0; color: #00d4ff; }
+        #info-panel ul { text-align: left; line-height: 1.6; }
+        #info-panel button { background: white; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+
+        /* Bouton payer en bas */
+        #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; text-align: center; }
+        .pay-btn { background: white; border: none; color: black; padding: 15px 35px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+
+        /* Zoom image sur le côté */
+        #preview-box {
+            position: fixed;
+            top: 50%;
+            right: -400px;
+            transform: translateY(-50%);
+            width: 280px;
+            background: rgba(20,20,20,0.95);
+            border-left: 2px solid #00d4ff;
+            padding: 20px;
+            transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+            border-radius: 20px 0 0 20px;
+            text-align: center;
+        }
+        #preview-box.active { right: 0; }
+        #preview-box img { width: 100%; border-radius: 10px; box-shadow: 0 0 15px rgba(0,212,255,0.5); }
+        #preview-box .close-preview { margin-top: 15px; background: transparent; color: white; border: 1px solid white; padding: 5px 10px; cursor: pointer; border-radius: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div id="frame"></div>
+    <button id="info-btn" onclick="toggleInfo()">i</button>
+
+    <div id="info-panel">
+        <h2>Comment ça marche ?</h2>
+        <ul>
+            <li><strong>Naviguer :</strong> Bouge ta souris (ou ton doigt) pour voyager dans la galaxie.</li>
+            <li><strong>Voir de près :</strong> Clique sur n'importe quel souvenir pour l'afficher en grand.</li>
+            <li><strong>Acheter ta place :</strong> Clique sur le gros bouton en bas. Tu choisis ton prix (dès 1€).</li>
+            <li><strong>Ton image :</strong> Après le paiement, tu recevras le lien pour nous envoyer ta photo ou vidéo.</li>
+        </ul>
+        <button onclick="toggleInfo()">J'ai compris !</button>
+    </div>
+
+    <div id="preview-box">
+        <img id="zoom-img" src="" alt="Zoom">
+        <p style="margin: 10px 0;">✨ Souvenir de la Galaxie</p>
+        <button class="close-preview" onclick="closePreview()">Fermer</button>
+    </div>
 
     <div id="ui">
-        <button class="pay-btn" id="checkout-button">
-            REJOINDRE LA GALAXIE (Dès 1€)
+        <button class="pay-btn" onclick="window.open('TON_LIEN_STRIPE_ICI', '_blank')">
+            AJOUTER MA TRACE (1€)
         </button>
-        <div class="count-info">Actuellement : <span id="member-count">0</span> souvenirs flottent ici.</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
     <script>
-        // --- 1. CONFIGURATION DU PAIEMENT ---
-        // !!! C'EST ICI QUE TU METS TON LIEN STRIPE !!!
-        const STRIPE_LINK = "METS_TON_LIEN_STRIPE_ICI"; 
+        let scene, camera, renderer, raycaster, mouse;
+        let members = [];
 
-        document.getElementById('checkout-button').addEventListener('click', function() {
-            // Ouvre le paiement dans un nouvel onglet
-            window.open(STRIPE_LINK, '_blank');
-        });
-
-        // --- 2. CONFIGURATION DE LA GALAXIE 3D (THREE.JS) ---
-        let scene, camera, renderer, members = [];
-        let mouseX = 0, mouseY = 0;
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
+        function toggleInfo() {
+            const panel = document.getElementById('info-panel');
+            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+        }
 
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
 
-            // Lumières pour un effet de profondeur
-            const light1 = new THREE.PointLight(0xff00ff, 1, 500); // Lumière violette
-            light1.position.set(50, 50, 50);
-            scene.add(light1);
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
 
-            const light2 = new THREE.PointLight(0x00ffff, 1, 500); // Lumière cyan
-            light2.position.set(-50, -50, 50);
-            scene.add(light2);
-
-            // Lumière d'ambiance
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-            scene.add(ambientLight);
-
-            // --- CRÉATION DE LA GALAXIE (LES PHOTOS) ---
-            // Pour l'instant, on met 300 photos de démonstration.
-            const totalMembers = 300; 
-            document.getElementById('member-count').innerText = totalMembers;
-
-            for (let i = 0; i < totalMembers; i++) {
-                createMember(i);
+            for (let i = 0; i < 150; i++) {
+                const url = `https://picsum.photos/seed/${i+100}/300/300`;
+                const geometry = new THREE.PlaneGeometry(5, 5);
+                const material = new THREE.MeshBasicMaterial({ 
+                    map: new THREE.TextureLoader().load(url),
+                    side: THREE.DoubleSide 
+                });
+                const plane = new THREE.Mesh(geometry, material);
+                plane.position.set((Math.random()-0.5)*200, (Math.random()-0.5)*200, (Math.random()-0.5)*200);
+                plane.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                plane.userData = { url: url };
+                scene.add(plane);
+                members.push(plane);
             }
 
-            // --- GESTION DE LA SOURIS (NAVIGATION) ---
-            document.addEventListener('mousemove', onDocumentMouseMove);
-            window.addEventListener('resize', onWindowResize);
-
             camera.position.z = 100;
+            window.addEventListener('click', onDocumentClick);
+            window.addEventListener('mousemove', onMouseMove);
+            animate();
         }
 
-        // Fonction pour créer une photo flottante
-        function createMember(index) {
-            // Un petit carré (2x2) pour la photo
-            const geometry = new THREE.PlaneGeometry(2, 2);
-            
-            // On utilise des images aléatoires de Unsplash pour la démo
-            const material = new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load(`https://picsum.photos/seed/${index + 10}/200/200`),
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.8
-            });
-            
-            const plane = new THREE.Mesh(geometry, material);
-
-            // On les éparpille partout dans l'espace
-            plane.position.x = (Math.random() - 0.5) * 200;
-            plane.position.y = (Math.random() - 0.5) * 200;
-            plane.position.z = (Math.random() - 0.5) * 200;
-
-            // Et on leur donne une rotation aléatoire
-            plane.rotation.x = Math.random() * Math.PI;
-            plane.rotation.y = Math.random() * Math.PI;
-
-            members.push(plane);
-            scene.add(plane);
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         }
 
-        // --- GESTION DES MOUVEMENTS DE SOURIS ---
-        function onDocumentMouseMove(event) {
-            mouseX = (event.clientX - windowHalfX);
-            mouseY = (event.clientY - windowHalfY);
+        function onDocumentClick(event) {
+            // Empêche le clic de traverser si on clique sur un bouton de l'interface
+            if (event.target.tagName !== 'CANVAS') return;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(members);
+
+            if (intersects.length > 0) {
+                const object = intersects[0].object;
+                document.getElementById('zoom-img').src = object.userData.url;
+                document.getElementById('preview-box').classList.add('active');
+            }
         }
 
-        function onWindowResize() {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        function closePreview() {
+            document.getElementById('preview-box').classList.remove('active');
         }
 
-        // --- LA BOUCLE D'ANIMATION (LÀ OÙ TOUT BOUGE) ---
         function animate() {
             requestAnimationFrame(animate);
-            render();
-        }
-
-        function render() {
-            // --- LA NAVIGATION ---
-            // On déplace la caméra doucement en fonction de la souris
-            // C'est ça qui donne l'effet de "navigation dedans"
-            camera.position.x += (mouseX - camera.position.x) * 0.01;
-            camera.position.y += (-mouseY - camera.position.y) * 0.01;
-            
-            // La caméra regarde toujours le centre de la galaxie
+            scene.rotation.y += 0.0005;
+            camera.position.x += (mouse.x * 30 - camera.position.x) * 0.05;
+            camera.position.y += (mouse.y * 30 - camera.position.y) * 0.05;
             camera.lookAt(scene.position);
-
-            // --- LE MOUVEMENT DE LA GALAXIE ---
-            // On fait tourner toute la scène doucement pour un effet cosmique
-            scene.rotation.y += 0.001;
-            scene.rotation.x += 0.0005;
-
-            // On fait osciller un peu les images pour qu'elles aient l'air de flotter
-            members.forEach(member => {
-                member.rotation.y += 0.002;
-                member.rotation.x += 0.001;
-            });
-
             renderer.render(scene, camera);
         }
 
-        // Lancement !
         init();
-        animate();
-
     </script>
 </body>
 </html>
