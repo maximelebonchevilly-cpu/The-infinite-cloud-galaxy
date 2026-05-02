@@ -5,39 +5,29 @@
     <title>THE CORE 5000 - SATURN PROJECT</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: white; touch-action: none; }
-        
         #info-btn {
             position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
             background: #00d4ff; border: 2px solid white; border-radius: 50%; color: black;
             font-size: 24px; font-weight: bold; cursor: pointer; z-index: 5000;
             display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px #00d4ff;
         }
-
         #vip-counter {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 10px 25px; 
             border-radius: 50px; font-weight: bold; z-index: 1000; box-shadow: 0 0 20px #ff0055;
         }
-
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 350px; background: rgba(0,0,0,0.98); border: 2px solid #ffcc00;
             padding: 20px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
-            box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
         }
-
-        /* Correction Qualité Image */
         #zoom-img { 
-            width: 100%; 
-            height: auto;
-            border-radius: 10px; 
-            display: block;
-            margin-bottom: 15px;
-            /* Force le navigateur à utiliser la meilleure résolution possible */
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: auto;
+            width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px;
+            /* Optimisation du rendu navigateur */
+            image-rendering: high-quality;
+            -ms-interpolation-mode: bicubic;
         }
-
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
         .pay-btn {
             background: #fff; color: #000; padding: 20px 50px; border-radius: 50px;
@@ -49,7 +39,7 @@
 </head>
 <body>
 
-    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Photos larges.\n- ANNEAUX : Photos standards.\n- NAVIGATION : Glissez pour tourner, Scrollez pour zoomer.')">i</div>
+    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Haute Définition.\n- CLIC : Visualisation originale.')">i</div>
     <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000 PLACES</div>
 
     <div id="preview-box">
@@ -75,9 +65,10 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
             camera.position.set(0, 150, 400);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            // Rendu de précision
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio); 
+            renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1); // Bloque à 2 pour éviter le flou sans tuer la batterie
             document.body.appendChild(renderer.domElement);
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
@@ -88,17 +79,22 @@
                 let size, textureURL, isVIP;
                 
                 if (i < 150) { 
-                    size = 22;
-                    isVIP = true;
-                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/300/300`;
+                    size = 24; isVIP = true;
+                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/600/600`;
                 } else {
-                    size = 12;
-                    isVIP = false;
-                    textureURL = `https://picsum.photos/id/${i+100}/150/150`;
+                    size = 12; isVIP = false;
+                    textureURL = `https://picsum.photos/id/${i+100}/200/200`;
                 }
 
+                // CHARGEMENT ET RÉGLAGE DE LA QUALITÉ BRUTE
+                const texture = loader.load(textureURL);
+                texture.generateMipmaps = true;
+                texture.minFilter = THREE.LinearMipmapLinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
                 const mat = new THREE.MeshBasicMaterial({ 
-                    map: loader.load(textureURL), 
+                    map: texture, 
                     side: THREE.DoubleSide,
                     transparent: !isVIP,
                     opacity: isVIP ? 1 : 0.8
@@ -107,21 +103,20 @@
                 const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
                 
                 if (isVIP) { 
-                    const dist = Math.random() * 110;
+                    const dist = Math.random() * 115;
                     const t = Math.random() * Math.PI * 2;
                     const p = Math.random() * Math.PI;
                     plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
                     plane.lookAt(0,0,0);
                 } else {
                     const angle = Math.random() * Math.PI * 2;
-                    const radius = 180 + Math.random() * 350;
+                    const radius = 190 + Math.random() * 350;
                     plane.position.x = Math.cos(angle) * radius;
                     plane.position.z = Math.sin(angle) * radius;
-                    plane.position.y = (Math.random() - 0.5) * 30;
+                    plane.position.y = (Math.random() - 0.5) * 40;
                     plane.lookAt(0, plane.position.y, 0);
                 }
                 
-                // On stocke l'URL brute pour la réutiliser au clic
                 plane.userData = { hd: textureURL };
                 mainGroup.add(plane);
             }
@@ -130,8 +125,8 @@
             window.addEventListener('mouseup', () => isDragging = false);
             window.addEventListener('mousemove', (e) => {
                 if (isDragging) {
-                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
+                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.004;
+                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.004;
                 }
                 prevMouse = { x: e.clientX, y: e.clientY };
                 mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -140,7 +135,6 @@
 
             window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 0.5; });
 
-            // CLIC POUR AFFICHAGE HAUTE QUALITÉ (CORRIGÉ)
             window.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'CANVAS') return;
                 raycaster.setFromCamera(mouse, camera);
@@ -149,10 +143,7 @@
                     const clickedObj = intersects[0].object;
                     const imgElement = document.getElementById('zoom-img');
                     
-                    // On vide l'ancienne image pour éviter le flash
-                    imgElement.src = "";
-
-                    // On recharge l'image originale proprement
+                    // Chargement natif pour éviter toute perte
                     const imgLoader = new Image();
                     imgLoader.src = clickedObj.userData.hd;
                     
@@ -168,7 +159,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if(!isDragging) mainGroup.rotation.y += 0.001;
+            if(!isDragging) mainGroup.rotation.y += 0.0007;
             camera.lookAt(0,0,0);
             renderer.render(scene, camera);
         }
