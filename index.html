@@ -6,7 +6,6 @@
     <style>
         body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: white; touch-action: none; }
         
-        /* LOG INFO (Indispensable) */
         #info-btn {
             position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
             background: #00d4ff; border: 2px solid white; border-radius: 50%; color: black;
@@ -38,7 +37,7 @@
 </head>
 <body>
 
-    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Réservé aux 5000 premiers fondateurs.\n- ANNEAUX : Pour tous les suivants.\n- NAVIGATION : Glissez pour tourner, Scrollez pour zoomer.')">i</div>
+    <div id="info-btn" onclick="alert('ACCÈS VIP 5000 :\n\n- NOYAU CENTRAL : Photos larges (22px).\n- ANNEAUX : Photos standards (12px).\n- NAVIGATION : Glissez pour tourner, Scrollez pour zoomer.')">i</div>
     <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000 PLACES</div>
 
     <div id="preview-box">
@@ -47,13 +46,18 @@
         <button onclick="document.getElementById('preview-box').style.display='none'" style="margin-top:10px; width:100%; background:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">RETOUR</button>
     </div>
 
-    <div id="ui"><button class="pay-btn" onclick="window.open('TON_LIEN_STRIPE_ICI', '_blank')">REJOINDRE LE NOYAU (1€)</button></div>
+    <div id="ui">
+        <button class="pay-btn" onclick="window.open('TON_LIEN_STRIPE_ICI', '_blank')">REJOINDRE LE NOYAU (1€)</button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let scene, camera, renderer, raycaster, mouse = new THREE.Vector2();
         let mainGroup = new THREE.Group();
         let isDragging = false, prevMouse = { x: 0, y: 0 };
+
+        // Configuration de tes 3 photos de départ
+        const mesPhotos = ['danse1.jpg', 'danse2.jpg', 'danse3.jpg'];
 
         function init() {
             scene = new THREE.Scene();
@@ -67,33 +71,55 @@
             raycaster = new THREE.Raycaster();
 
             const loader = new THREE.TextureLoader();
-            // On simule le mélange Noyau + Anneaux
-            for (let i = 0; i < 450; i++) {
-                const id = i + 200;
-                const mat = new THREE.MeshBasicMaterial({ map: loader.load(`https://picsum.photos/id/${id}/150/150`), side: THREE.DoubleSide });
-                const plane = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), mat);
+
+            // Création de 600 éléments (Noyau + début des Anneaux)
+            for (let i = 0; i < 600; i++) {
+                let size, textureURL, isVIP;
                 
                 if (i < 150) { 
-                    // LE NOYAU (Sphère dense au milieu)
-                    const dist = Math.random() * 100;
+                    // --- LE NOYAU (VIP) ---
+                    size = 22; // +10px par rapport aux anneaux
+                    isVIP = true;
+                    // On utilise tes photos pour les 3 premières, sinon du Lorem Picsum
+                    textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/150/150`;
+                } else {
+                    // --- LES ANNEAUX ---
+                    size = 12; // Taille standard
+                    isVIP = false;
+                    textureURL = `https://picsum.photos/id/${i+100}/150/150`;
+                }
+
+                const mat = new THREE.MeshBasicMaterial({ 
+                    map: loader.load(textureURL), 
+                    side: THREE.DoubleSide,
+                    transparent: !isVIP,
+                    opacity: isVIP ? 1 : 0.8
+                });
+
+                const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
+                
+                if (isVIP) { 
+                    // Placement dans la sphère centrale
+                    const dist = Math.random() * 110;
                     const t = Math.random() * Math.PI * 2;
                     const p = Math.random() * Math.PI;
                     plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
                     plane.lookAt(0,0,0);
                 } else {
-                    // LES ANNEAUX (Saturne)
+                    // Placement dans les anneaux
                     const angle = Math.random() * Math.PI * 2;
-                    const radius = 180 + Math.random() * 300;
+                    const radius = 180 + Math.random() * 350;
                     plane.position.x = Math.cos(angle) * radius;
                     plane.position.z = Math.sin(angle) * radius;
-                    plane.position.y = (Math.random() - 0.5) * 20;
+                    plane.position.y = (Math.random() - 0.5) * 30;
                     plane.lookAt(0, plane.position.y, 0);
                 }
                 
-                plane.userData = { hd: `https://picsum.photos/id/${id}/600/600` };
+                plane.userData = { hd: textureURL };
                 mainGroup.add(plane);
             }
 
+            // Événements Souris / Touch
             window.addEventListener('mousedown', () => isDragging = true);
             window.addEventListener('mouseup', () => isDragging = false);
             window.addEventListener('mousemove', (e) => {
@@ -117,6 +143,7 @@
                     document.getElementById('preview-box').style.display = 'block';
                 }
             });
+
             animate();
         }
 
@@ -126,6 +153,13 @@
             camera.lookAt(0,0,0);
             renderer.render(scene, camera);
         }
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
         init();
     </script>
 </body>
