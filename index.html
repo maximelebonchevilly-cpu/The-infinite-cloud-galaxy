@@ -74,6 +74,7 @@
 
         function init() {
             scene = new THREE.Scene();
+            // Augmentation de la distance de vue (15000) pour voir le fond infini
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 15000);
             camera.position.set(0, 150, 400);
 
@@ -84,19 +85,19 @@
             scene.add(mainGroup);
             raycaster = new THREE.Raycaster();
 
-            // --- FOND INFINI (NÉBULEUSE ET ÉTOILES) ---
+            // --- FOND INFINI (NÉBULEUSES ET GALAXIES) ---
             const loaderSky = new THREE.TextureLoader();
             const spaceTexture = loaderSky.load('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=2048&q=80');
             spaceTexture.mapping = THREE.EquirectangularReflectionMapping;
             scene.background = spaceTexture;
 
             const starGeometry = new THREE.BufferGeometry();
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.6, transparent: true, opacity: 0.8 });
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.8 });
             const starVertices = [];
             for (let i = 0; i < 15000; i++) {
-                const x = (Math.random() - 0.5) * 12000;
-                const y = (Math.random() - 0.5) * 12000;
-                const z = (Math.random() - 0.5) * 12000;
+                const x = (Math.random() - 0.5) * 10000;
+                const y = (Math.random() - 0.5) * 10000;
+                const z = (Math.random() - 0.5) * 10000;
                 starVertices.push(x, y, z);
             }
             starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
@@ -140,7 +141,7 @@
                 mainGroup.add(plane);
             }
 
-            // --- MOBILE EVENTS ---
+            // --- GESTION TOUCHER & SOURIS ---
             window.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
