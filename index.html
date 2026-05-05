@@ -37,6 +37,7 @@
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         .close-btn { background: #00d4ff; color: black; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        #nav-hint { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.25); z-index: 1000; pointer-events: none; white-space: nowrap; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -47,10 +48,10 @@
     <div id="info-modal">
         <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
         <p><b>📍 Concept :</b> 5000 spots for eternity. (5000 places pour l'éternité).</p>
-        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star. (Paiement (1€) -> Formulaire -> Ton étoile).</p>
-        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking. (Prochainement : Système solaire et suivi Hubble en direct).</p>
-        <p><b>📱 Controls :</b> 1 finger to rotate / 2 fingers to zoom. (1 doigt pour tourner / 2 doigts pour zoomer).</p>
-        <p><b>✨ Explore :</b> Use zoom to navigate *inside* the 3D nebula. (Utilise le zoom pour naviguer *dans* la nébuleuse 3D).</p>
+        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star.</p>
+        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking.</p>
+        <p><b>📱 Controls :</b> 1 doigt → tourner · 2 doigts → zoomer · WASD → naviguer.</p>
+        <p><b>✨ Explore :</b> Scroll/zoom pour plonger dans la galaxie.</p>
         <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">CLOSE / FERMER</button>
     </div>
 
@@ -63,177 +64,380 @@
     <div id="ui">
         <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
     </div>
+    <div id="nav-hint">WASD · naviguer · Scroll → plonger dans la galaxie</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let scene, camera, renderer, raycaster, mouse = new THREE.Vector2();
-        let mainGroup = new THREE.Group();
-        let skyGroup = new THREE.Group(); // Ton groupe de fond existant
-        let nebulaGroup = new THREE.Group(); // Le nouveau groupe de gaz volumétrique
-        let isDragging = false, prevMouse = { x: 0, y: 0 };
+        let galaxyGroup = new THREE.Group();
+        let bgGroup     = new THREE.Group();
+        let isDragging  = false, prevMouse = { x: 0, y: 0 };
         let initialPinchDistance = null;
+        const keys = {};
 
         const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 30000);
-            camera.position.set(0, 150, 400);
+        // Distribution gaussienne Box-Muller
+        function gaussRand() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+        }
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        // Sprite doux pour les particules
+        function makeSprite(r, g, b, sharpness) {
+            sharpness = sharpness || 0.10;
+            const sz = 128;
+            const cvs = document.createElement('canvas');
+            cvs.width = cvs.height = sz;
+            const ctx = cvs.getContext('2d');
+            const h = sz / 2;
+            const grd = ctx.createRadialGradient(h, h, 0, h, h, h);
+            grd.addColorStop(0,             'rgba(' + r + ',' + g + ',' + b + ',1)');
+            grd.addColorStop(sharpness,     'rgba(' + r + ',' + g + ',' + b + ',0.7)');
+            grd.addColorStop(sharpness * 4, 'rgba(' + r + ',' + g + ',' + b + ',0.2)');
+            grd.addColorStop(0.7,           'rgba(' + r + ',' + g + ',' + b + ',0.04)');
+            grd.addColorStop(1,             'rgba(' + r + ',' + g + ',' + b + ',0)');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, sz, sz);
+            return new THREE.CanvasTexture(cvs);
+        }
+
+        function addPoints(verts, grp, color, size, opacity, sprite, blend) {
+            if (!verts || verts.length === 0) return;
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+            grp.add(new THREE.Points(geo, new THREE.PointsMaterial({
+                color: color,
+                size: size,
+                transparent: true,
+                opacity: opacity,
+                map: sprite || null,
+                sizeAttenuation: true,
+                depthWrite: false,
+                blending: blend || THREE.AdditiveBlending
+            })));
+        }
+
+        // ── FOND : étoiles profondes ──────────────────────────────
+        function buildBackground() {
+            var sv = [];
+            for (var i = 0; i < 30000; i++)
+                sv.push((Math.random() - .5) * 80000, (Math.random() - .5) * 80000, (Math.random() - .5) * 80000);
+            addPoints(sv, bgGroup, 0xffffff, 1.1, 0.85, null);
+
+            var bv = [];
+            for (var i = 0; i < 10000; i++)
+                bv.push((Math.random() - .5) * 75000, (Math.random() - .5) * 75000, (Math.random() - .5) * 75000);
+            addPoints(bv, bgGroup, 0xd0e0ff, 0.75, 0.45, null);
+
+            var gv = [];
+            for (var i = 0; i < 5000; i++)
+                gv.push((Math.random() - .5) * 70000, (Math.random() - .5) * 70000, (Math.random() - .5) * 70000);
+            addPoints(gv, bgGroup, 0xffe8b0, 0.8, 0.3, null);
+        }
+
+        // ── GALAXIE SPIRALE style Andromède ───────────────────────
+        function buildGalaxy() {
+            var spCore  = makeSprite(255, 248, 220, 0.06);
+            var spArm   = makeSprite(210, 228, 255, 0.10);
+            var spOuter = makeSprite(190, 210, 255, 0.12);
+            var spDust  = makeSprite(25,  18,  15, 0.15);
+
+            // -- COEUR CENTRAL blanc-jaune dense --
+            var coreV = [];
+            for (var i = 0; i < 20000; i++) {
+                var r     = Math.abs(gaussRand()) * 70 + Math.random() * 25;
+                var theta = Math.random() * Math.PI * 2;
+                var phi   = Math.acos(2 * Math.random() - 1);
+                var flatY = Math.max(0.55 - r / 250, 0.08);
+                coreV.push(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta) * flatY,
+                    r * Math.cos(phi)
+                );
+            }
+            addPoints(coreV,              galaxyGroup, 0xfff8e0, 20,  0.05,  spCore);
+            addPoints(coreV.slice(0,6000),galaxyGroup, 0xffffff,  7,  0.14,  spCore);
+            addPoints(coreV.slice(0,1500),galaxyGroup, 0xffffff,  3,  0.40,  null);
+
+            // -- BULBE INTERMEDIAIRE --
+            var bulgeV = [];
+            for (var i = 0; i < 12000; i++) {
+                var r     = 55 + Math.random() * 170;
+                var theta = Math.random() * Math.PI * 2;
+                var phi   = Math.acos(2 * Math.random() - 1);
+                bulgeV.push(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta) * 0.26,
+                    r * Math.cos(phi)
+                );
+            }
+            addPoints(bulgeV, galaxyGroup, 0xfff0cc, 16, 0.030, spCore);
+
+            // -- BRAS SPIRAUX (2 principaux + 2 secondaires) --
+            var armV = [], armBrightV = [], dustV = [];
+
+            for (var arm = 0; arm < 2; arm++) {
+                var armOffset = (arm / 2) * Math.PI * 2;
+                for (var i = 0; i < 28000; i++) {
+                    var t       = i / 28000;
+                    var angle   = armOffset + t * Math.PI * 3.5 + (Math.random() - .5) * 0.32;
+                    var radius  = 120 + t * 600 + (Math.random() - .5) * 50;
+                    var scatter = (18 + t * 110) * (Math.random() - .5);
+                    var height  = (Math.random() - .5) * (7 + t * 16);
+                    var x = Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4;
+                    var z = Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4;
+                    armV.push(x, height, z);
+                    if (Math.random() < 0.055) armBrightV.push(x, height, z);
+                    if (Math.random() < 0.22) {
+                        var da = angle + 0.11;
+                        var dr = radius + (Math.random() - .5) * 38;
+                        dustV.push(Math.cos(da) * dr, height * 0.5, Math.sin(da) * dr);
+                    }
+                }
+            }
+            // Bras secondaires plus fins
+            for (var arm = 0; arm < 2; arm++) {
+                var armOffset = (arm / 2) * Math.PI * 2 + Math.PI / 2;
+                for (var i = 0; i < 8000; i++) {
+                    var t      = i / 8000;
+                    var angle  = armOffset + t * Math.PI * 3.0 + (Math.random() - .5) * 0.5;
+                    var radius = 170 + t * 430 + (Math.random() - .5) * 65;
+                    var scatter= (28 + t * 90) * (Math.random() - .5);
+                    var height = (Math.random() - .5) * (9 + t * 18);
+                    armV.push(
+                        Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4,
+                        height,
+                        Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4
+                    );
+                }
+            }
+
+            addPoints(armV,        galaxyGroup, 0xd8e8ff, 13,  0.026, spArm);
+            addPoints(armBrightV,  galaxyGroup, 0xffffff,  3,  0.55,  null);
+            addPoints(dustV,       galaxyGroup, 0x080508,  26,  0.20,  spDust, THREE.NormalBlending);
+
+            // -- DISQUE EXTERNE --
+            var outerV = [];
+            for (var i = 0; i < 15000; i++) {
+                var angle  = Math.random() * Math.PI * 2;
+                var radius = 280 + Math.pow(Math.random(), 1.5) * 480;
+                var height = (Math.random() - .5) * (10 + radius * 0.025);
+                outerV.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
+            }
+            addPoints(outerV, galaxyGroup, 0xc0d4f5, 9, 0.016, spOuter);
+
+            // -- HALO GALACTIQUE --
+            var haloV = [];
+            for (var i = 0; i < 5000; i++) {
+                var theta = Math.random() * Math.PI * 2;
+                var phi   = Math.acos(2 * Math.random() - 1);
+                var r     = 380 + Math.random() * 520;
+                haloV.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta) * 0.55, r * Math.cos(phi));
+            }
+            addPoints(haloV, galaxyGroup, 0xe8f0ff, 7, 0.011, spOuter);
+        }
+
+        // ── CEINTURE D'ASTÉROÏDES (système solaire, dans un bras) ─
+        function buildAsteroidBelt() {
+            var solarGroup = new THREE.Group();
+            solarGroup.position.set(420, 0, 280);
+
+            var sunSp = makeSprite(255, 245, 190, 0.04);
+            addPoints([0, 0, 0], solarGroup, 0xfff5aa, 18, 1.0, sunSp);
+            addPoints([0, 0, 0], solarGroup, 0xffdd60, 60, 0.4, sunSp);
+
+            var beltPos = [], dustPos = [], bigPos = [];
+            for (var i = 0; i < 5000; i++) {
+                var angle = Math.random() * Math.PI * 2;
+                var u     = Math.random() + Math.random();
+                var r     = 77 + (u < 1 ? u : 2 - u) * 35;
+                beltPos.push(Math.cos(angle) * r, (Math.random() - .5) * 4, Math.sin(angle) * r);
+            }
+            for (var i = 0; i < 3000; i++) {
+                var angle = Math.random() * Math.PI * 2;
+                var r     = 72 + Math.random() * 45;
+                dustPos.push(Math.cos(angle) * r, (Math.random() - .5) * 2.5, Math.sin(angle) * r);
+            }
+            for (var i = 0; i < 60; i++) {
+                var angle = Math.random() * Math.PI * 2;
+                var r     = 80 + Math.random() * 30;
+                bigPos.push(Math.cos(angle) * r, (Math.random() - .5) * 2, Math.sin(angle) * r);
+            }
+            addPoints(beltPos, solarGroup, 0xaa9988, 0.9, 0.50, null, THREE.NormalBlending);
+            addPoints(dustPos, solarGroup, 0xc09870, 0.4, 0.25, null, THREE.NormalBlending);
+            addPoints(bigPos,  solarGroup, 0xddccbb, 2.8, 0.65, null, THREE.NormalBlending);
+
+            galaxyGroup.add(solarGroup);
+        }
+
+        // ── PHOTOS VIP ───────────────────────────────────────────
+        var vipMeshes = [];
+        function buildVIP() {
+            var loader = new THREE.TextureLoader();
+            var maxA   = renderer.capabilities.getMaxAnisotropy();
+
+            for (var i = 0; i < 600; i++) {
+                var isVIP = i < 150;
+                var size  = isVIP ? 24 : 14;
+                var url   = (isVIP && i < mesPhotos.length)
+                    ? mesPhotos[i]
+                    : 'https://picsum.photos/id/' + (i + 100) + '/' + (isVIP ? 500 : 200) + '/' + (isVIP ? 500 : 200);
+
+                var tex = loader.load(url);
+                tex.anisotropy = maxA;
+                tex.minFilter  = THREE.LinearFilter;
+
+                var mat   = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: !isVIP, opacity: isVIP ? 1 : 0.7 });
+                var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
+
+                if (isVIP) {
+                    var r = Math.random() * 110;
+                    var t = Math.random() * Math.PI * 2;
+                    var p = Math.random() * Math.PI;
+                    plane.position.set(r * Math.sin(p) * Math.cos(t), r * Math.sin(p) * Math.sin(t) * 0.5, r * Math.cos(p));
+                    plane.lookAt(0, 0, 0);
+                } else {
+                    var arm    = Math.floor(Math.random() * 2);
+                    var t2     = Math.random();
+                    var angle  = arm * Math.PI + t2 * Math.PI * 3.2 + (Math.random() - .5) * 0.4;
+                    var radius = 130 + t2 * 500 + (Math.random() - .5) * 50;
+                    var scatter= (20 + t2 * 100) * (Math.random() - .5);
+                    plane.position.set(
+                        Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4,
+                        (Math.random() - .5) * (6 + t2 * 14),
+                        Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4
+                    );
+                    plane.lookAt(0, 0, 0);
+                }
+                plane.userData = { hd: url };
+                galaxyGroup.add(plane);
+                if (isVIP) vipMeshes.push(plane);
+            }
+        }
+
+        // ── INIT ─────────────────────────────────────────────────
+        function init() {
+            scene    = new THREE.Scene();
+            camera   = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 200000);
+            camera.position.set(0, 320, 1600);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x00000a);
             document.body.appendChild(renderer.domElement);
-            
-            scene.add(mainGroup);
-            scene.add(skyGroup);
-            scene.add(nebulaGroup); // Ajout du groupe de gaz
+
+            scene.add(bgGroup);
+            scene.add(galaxyGroup);
             raycaster = new THREE.Raycaster();
 
-            // --- FOND 3D INTERACTIF (TON EXISTANT SPHÉRIQUE) ---
-            const loader = new THREE.TextureLoader();
-            const spaceTexture = loader.load('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=2048&q=80');
-            const skyGeometry = new THREE.SphereGeometry(15000, 60, 40);
-            skyGeometry.scale(-1, 1, 1); 
-            const skyMaterial = new THREE.MeshBasicMaterial({ map: spaceTexture });
-            skyGroup.add(new THREE.Mesh(skyGeometry, skyMaterial));
+            // Inclinaison galaxie comme Andromède
+            galaxyGroup.rotation.x = 0.36;
+            galaxyGroup.rotation.z = 0.10;
 
-            // Les étoiles de fond existantes
-            const starGeometry = new THREE.BufferGeometry();
-            const starPos = [];
-            for (let i = 0; i < 20000; i++) {
-                starPos.push((Math.random()-0.5)*25000, (Math.random()-0.5)*25000, (Math.random()-0.5)*25000);
-            }
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            skyGroup.add(new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.9 })));
+            buildBackground();
+            buildGalaxy();
+            buildAsteroidBelt();
+            buildVIP();
 
-            // --- INJECTION DU GAZ VOLUMÉTRIQUE 3D (FUSION) ---
-            // Texture de fumée circulaire
-            loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/terrain/cloud.png', function(texture) {
-                const nebulaGeo = new THREE.PlaneBufferGeometry(2500, 2500);
-                for (let i = 0; i < 60; i++) {
-                    const nebulaMat = new THREE.MeshBasicMaterial({
-                        map: texture,
-                        transparent: true,
-                        opacity: 0.15, // Très subtil pour l'effet de gaz
-                        blending: THREE.AdditiveBlending, // Pour que les nuages s'illuminent entre eux
-                        depthWrite: false,
-                        side: THREE.DoubleSide
-                    });
-                    const cloud = new THREE.Mesh(nebulaGeo, nebulaMat);
-                    // Placement aléatoire dans un immense volume 3D
-                    cloud.position.set((Math.random()-0.5)*12000, (Math.random()-0.5)*12000, (Math.random()-0.5)*12000);
-                    cloud.rotation.z = Math.random() * Math.PI;
-                    // Teinte de la nébuleuse (Bleu / Violet / Cyan)
-                    const colors = [0x00d4ff, 0x7700ff, 0x0022ff];
-                    cloud.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
-                    nebulaGroup.add(cloud);
-                }
-            });
+            // Navigation WASD
+            window.addEventListener('keydown', function(e) { keys[e.code] = true; });
+            window.addEventListener('keyup',   function(e) { keys[e.code] = false; });
 
-            // --- OBJETS VIP (VOTRE EXISTANT) ---
-            const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-            for (let i = 0; i < 600; i++) {
-                let size = (i < 150) ? 24 : 14;
-                let isVIP = i < 150;
-                let textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/500/500`;
-                const texture = loader.load(textureURL);
-                texture.anisotropy = maxAnisotropy;
-                texture.minFilter = THREE.LinearFilter;
-                const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: !isVIP, opacity: isVIP ? 1 : 0.7 });
-                const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
-                
-                if (isVIP) { 
-                    const dist = Math.random() * 120;
-                    const t = Math.random() * Math.PI * 2;
-                    const p = Math.random() * Math.PI;
-                    plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
-                    plane.lookAt(0,0,0);
-                } else {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 200 + Math.random() * 350;
-                    plane.position.set(Math.cos(angle)*radius, (Math.random()-0.5)*40, Math.sin(angle)*radius);
-                    plane.lookAt(0, plane.position.y, 0);
-                }
-                plane.userData = { hd: textureURL };
-                mainGroup.add(plane);
+            function applyNav() {
+                var SPEED = 8;
+                var fwd   = new THREE.Vector3();
+                camera.getWorldDirection(fwd);
+                var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+                if (keys['KeyW'] || keys['ArrowUp'])    camera.position.addScaledVector(fwd,   SPEED);
+                if (keys['KeyS'] || keys['ArrowDown'])  camera.position.addScaledVector(fwd,  -SPEED);
+                if (keys['KeyA'] || keys['ArrowLeft'])  camera.position.addScaledVector(right, -SPEED);
+                if (keys['KeyD'] || keys['ArrowRight']) camera.position.addScaledVector(right,  SPEED);
+                if (keys['KeyQ']) camera.position.y += SPEED;
+                if (keys['KeyE']) camera.position.y -= SPEED;
             }
 
-            // --- LUMIÈRE CENTRALE POUR LE NOYAU (FUSION) ---
-            const coreLight = new THREE.PointLight(0x00d4ff, 2, 2000);
-            coreLight.position.set(0,0,0);
-            scene.add(coreLight);
-
-            // --- GESTION TOUCHER & SOURIS (VOTRE EXISTANT) ---
-            window.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                else { isDragging = true; prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
-            }, { passive: false });
-
-            window.addEventListener('touchend', () => { isDragging = false; initialPinchDistance = null; });
-
-            window.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && initialPinchDistance) {
-                    const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    camera.position.z += (initialPinchDistance - currentDistance) * 1.5; // Zoom profond
-                    initialPinchDistance = currentDistance;
-                } else if (isDragging && e.touches.length === 1) {
-                    mainGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.touches[0].clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.001;
-                    nebulaGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.0005; // Rotation lente du gaz
-                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
-                e.preventDefault(); 
-            }, { passive: false });
-
-            window.addEventListener('mousemove', (e) => {
+            // Drag
+            renderer.domElement.addEventListener('mousedown', function() { isDragging = true; });
+            window.addEventListener('mouseup',   function() { isDragging = false; });
+            window.addEventListener('mousemove', function(e) {
                 if (isDragging) {
-                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.clientX - prevMouse.x) * 0.001;
-                    nebulaGroup.rotation.y += (e.clientX - prevMouse.x) * 0.0005;
+                    galaxyGroup.rotation.y += (e.clientX - prevMouse.x) * 0.004;
+                    galaxyGroup.rotation.x += (e.clientY - prevMouse.y) * 0.004;
+                    bgGroup.rotation.y     += (e.clientX - prevMouse.x) * 0.0003;
                 }
                 prevMouse = { x: e.clientX, y: e.clientY };
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                mouse.x   =  (e.clientX / window.innerWidth)  * 2 - 1;
+                mouse.y   = -(e.clientY / window.innerHeight) * 2 + 1;
             });
-            window.addEventListener('mousedown', () => isDragging = true);
-            window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 1.0; }); // Zoom molette profond
-            window.addEventListener('click', handleSelect);
-            window.addEventListener('touchend', (e) => { if(!isDragging && e.touches.length === 0) handleSelect(e); });
 
-            function handleSelect(e) {
-                if (e.target.tagName !== 'CANVAS') return;
+            // Scroll → avancer
+            window.addEventListener('wheel', function(e) {
+                var dir = new THREE.Vector3();
+                camera.getWorldDirection(dir);
+                camera.position.addScaledVector(dir, -e.deltaY * 1.5);
+            }, { passive: true });
+
+            // Touch
+            renderer.domElement.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                } else {
+                    isDragging = true;
+                    prevMouse  = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    mouse.x    =  (e.touches[0].clientX / window.innerWidth)  * 2 - 1;
+                    mouse.y    = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+                }
+            }, { passive: false });
+            window.addEventListener('touchend', function() { isDragging = false; initialPinchDistance = null; });
+            window.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2 && initialPinchDistance) {
+                    var d   = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    var dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+                    camera.position.addScaledVector(dir, (initialPinchDistance - d) * 2);
+                    initialPinchDistance = d;
+                } else if (isDragging && e.touches.length === 1) {
+                    galaxyGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.004;
+                    galaxyGroup.rotation.x += (e.touches[0].clientY - prevMouse.y) * 0.004;
+                    bgGroup.rotation.y     += (e.touches[0].clientX - prevMouse.x) * 0.0003;
+                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            // Click photo
+            var dragDist = 0;
+            renderer.domElement.addEventListener('mousedown', function() { dragDist = 0; });
+            window.addEventListener('mousemove', function() { if (isDragging) dragDist++; });
+            renderer.domElement.addEventListener('click', function(e) {
+                if (dragDist > 4) return;
                 raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(mainGroup.children);
-                if (intersects.length > 0) {
-                    document.getElementById('zoom-img').src = intersects[0].object.userData.hd;
+                var hits = raycaster.intersectObjects(vipMeshes);
+                if (hits.length > 0) {
+                    document.getElementById('zoom-img').src = hits[0].object.userData.hd;
                     document.getElementById('preview-box').style.display = 'block';
                 }
+            });
+
+            // Boucle
+            function animate() {
+                requestAnimationFrame(animate);
+                applyNav();
+                if (!isDragging) {
+                    galaxyGroup.rotation.y += 0.00012;
+                    bgGroup.rotation.y     += 0.00002;
+                }
+                var anyKey = keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']||keys['KeyQ']||keys['KeyE'];
+                if (!anyKey) camera.lookAt(0, 0, 0);
+                renderer.render(scene, camera);
             }
             animate();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if(!isDragging) {
-                mainGroup.rotation.y += 0.0008;
-                skyGroup.rotation.y += 0.0001; 
-                nebulaGroup.rotation.y += 0.00005; // Le gaz tourne très lentement
-            }
-            
-            // Effet Billboarding : les nuages font toujours face à la caméra pour l'effet 3D infini
-            nebulaGroup.children.forEach(cloud => {
-                cloud.lookAt(camera.position);
-            });
-
-            camera.lookAt(0,0,0);
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
+        window.addEventListener('resize', function() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
