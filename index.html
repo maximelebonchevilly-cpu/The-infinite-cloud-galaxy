@@ -13,7 +13,7 @@
         }
         #vip-counter {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 8px 20px; 
+            background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 8px 20px;
             border-radius: 50px; font-weight: bold; z-index: 1000; box-shadow: 0 0 20px #ff0055;
             font-size: 14px; white-space: nowrap;
         }
@@ -21,429 +21,150 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; max-width: 400px; background: rgba(0,0,0,0.95); border: 2px solid #00d4ff;
             padding: 25px; border-radius: 20px; z-index: 7000; display: none; text-align: left;
-            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0,212,255,0.3);
         }
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; max-width: 350px; background: rgba(0,0,0,0.98); border: 2px solid #ffcc00;
             padding: 20px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
         }
-        #zoom-img { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px; image-rendering: high-quality; }
+        #zoom-img { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px; }
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 100%; text-align: center; }
         .pay-btn {
             background: #fff; color: #000; padding: 15px 30px; border-radius: 50px;
             font-size: 18px; font-weight: 900; cursor: pointer; border: none;
             box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite;
         }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
         .close-btn { background: #00d4ff; color: black; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        #nav-hint { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.25); z-index: 1000; pointer-events: none; white-space: nowrap; letter-spacing: 2px; }
+        #nav-hint { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.22); z-index: 1000; pointer-events: none; white-space: nowrap; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
-    <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
+<div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
+<div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
 
-    <div id="info-modal">
-        <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
-        <p><b>📍 Concept :</b> 5000 spots for eternity. (5000 places pour l'éternité).</p>
-        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star.</p>
-        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking.</p>
-        <p><b>📱 Controls :</b> 1 doigt → tourner · 2 doigts → zoomer · WASD → naviguer.</p>
-        <p><b>✨ Explore :</b> Scroll/zoom pour plonger dans la galaxie.</p>
-        <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">CLOSE / FERMER</button>
-    </div>
+<div id="info-modal">
+    <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
+    <p><b>📍 Concept :</b> 5000 places pour l'éternité dans le Saturn Project.</p>
+    <p><b>📝 Inscription :</b> Paiement (1€) → Formulaire → Ta photo dans le noyau.</p>
+    <p><b>🚀 RoadMap :</b> Prochainement : Saturne, système solaire, Hubble live.</p>
+    <p><b>📱 Contrôles :</b> Drag → tourner · Scroll → avancer · WASD → naviguer librement.</p>
+    <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">FERMER</button>
+</div>
 
-    <div id="preview-box">
-        <img id="zoom-img" src="">
-        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ FOUNDING MEMBER ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">BACK</button>
-    </div>
+<div id="preview-box">
+    <img id="zoom-img" src="">
+    <p style="color:#ffcc00; margin:5px 0; font-weight:bold;">★ FOUNDING MEMBER ★</p>
+    <button onclick="document.getElementById('preview-box').style.display='none'"
+        style="width:100%;background:white;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;">BACK</button>
+</div>
 
-    <div id="ui">
-        <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
-    </div>
-    <div id="nav-hint">WASD · naviguer · Scroll → plonger dans la galaxie</div>
+<div id="ui">
+    <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
+</div>
+<div id="nav-hint">WASD · naviguer · Scroll → avancer dans l'espace</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        let scene, camera, renderer, raycaster, mouse = new THREE.Vector2();
-        let galaxyGroup = new THREE.Group();
-        let bgGroup     = new THREE.Group();
-        let isDragging  = false, prevMouse = { x: 0, y: 0 };
-        let initialPinchDistance = null;
-        const keys = {};
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    // ── GLOBALS ──────────────────────────────────────────────────
+    var scene, camera, renderer, raycaster;
+    var mouse        = new THREE.Vector2();
+    var galaxyGroup  = new THREE.Group(); // noyau + bras spiraux + photos
+    var bgGroup      = new THREE.Group(); // étoiles de fond
+    var allMeshes    = [];               // TOUTES les photos (cliquables)
+    var isDragging   = false;
+    var prevMouse    = { x: 0, y: 0 };
+    var initialPinch = null;
+    var dragDist     = 0;
+    var keys         = {};
 
-        const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
+    // ── Tes vraies photos ────────────────────────────────────────
+    var mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
 
-        // Distribution gaussienne Box-Muller
-        function gaussRand() {
-            let u = 0, v = 0;
-            while (u === 0) u = Math.random();
-            while (v === 0) v = Math.random();
-            return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    // ── Gaussienne (Box-Muller) pour le noyau dense ──────────────
+    function gaussRand() {
+        var u = 0, v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    // ── Sprite canvas doux ───────────────────────────────────────
+    function makeSprite(r, g, b, sharp) {
+        sharp = sharp || 0.10;
+        var sz = 128, cvs = document.createElement('canvas');
+        cvs.width = cvs.height = sz;
+        var ctx = cvs.getContext('2d'), h = sz / 2;
+        var grd = ctx.createRadialGradient(h,h,0, h,h,h);
+        grd.addColorStop(0,        'rgba('+r+','+g+','+b+',1)');
+        grd.addColorStop(sharp,    'rgba('+r+','+g+','+b+',0.65)');
+        grd.addColorStop(sharp*4,  'rgba('+r+','+g+','+b+',0.18)');
+        grd.addColorStop(0.7,      'rgba('+r+','+g+','+b+',0.03)');
+        grd.addColorStop(1,        'rgba('+r+','+g+','+b+',0)');
+        ctx.fillStyle = grd; ctx.fillRect(0,0,sz,sz);
+        return new THREE.CanvasTexture(cvs);
+    }
+
+    function addPoints(verts, grp, color, size, opacity, sprite, blend) {
+        if (!verts || verts.length === 0) return;
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        grp.add(new THREE.Points(geo, new THREE.PointsMaterial({
+            color: color, size: size, transparent: true, opacity: opacity,
+            map: sprite || null, sizeAttenuation: true,
+            depthWrite: false, blending: blend || THREE.AdditiveBlending
+        })));
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  ÉTOILES DE FOND — comme image 2 (propre, noir profond)
+    // ════════════════════════════════════════════════════════
+    function buildBackground() {
+        var sv = [];
+        for (var i = 0; i < 25000; i++)
+            sv.push((Math.random()-.5)*50000,(Math.random()-.5)*50000,(Math.random()-.5)*50000);
+        addPoints(sv, bgGroup, 0xffffff, 1.0, 0.85, null);
+
+        var bv = [];
+        for (var i = 0; i < 8000; i++)
+            bv.push((Math.random()-.5)*48000,(Math.random()-.5)*48000,(Math.random()-.5)*48000);
+        addPoints(bv, bgGroup, 0xc8dcff, 0.7, 0.4, null);
+
+        var wv = [];
+        for (var i = 0; i < 4000; i++)
+            wv.push((Math.random()-.5)*45000,(Math.random()-.5)*45000,(Math.random()-.5)*45000);
+        addPoints(wv, bgGroup, 0xffeebb, 0.75, 0.28, null);
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  GALAXIE — particules UNIQUEMENT pour le halo lumineux
+    //  du cœur. PAS de points blancs dans les bras
+    //  (les bras sont remplis par les photos elles-mêmes).
+    // ════════════════════════════════════════════════════════
+    function buildGalaxyParticles() {
+        var spCore = makeSprite(255, 248, 220, 0.05);
+
+        // Cœur brillant — halo lumineux autour du noyau VIP
+        var coreV = [];
+        for (var i = 0; i < 12000; i++) {
+            var r     = Math.abs(gaussRand()) * 60 + Math.random() * 20;
+            var theta = Math.random() * Math.PI * 2;
+            var phi   = Math.acos(2 * Math.random() - 1);
+            var flatY = Math.max(0.5 - r/220, 0.08);
+            coreV.push(
+                r * Math.sin(phi) * Math.cos(theta),
+                r * Math.sin(phi) * Math.sin(theta) * flatY,
+                r * Math.cos(phi)
+            );
         }
+        // Halo large très doux (donne l'effet de brillance du noyau)
+        addPoints(coreV, galaxyGroup, 0xfff8e0, 18, 0.04, spCore);
+        // Centre encore plus brillant
+        addPoints(coreV.slice(0, 3000), galaxyGroup, 0xffffff, 5, 0.18, spCore);
 
-        // Sprite doux pour les particules
-        function makeSprite(r, g, b, sharpness) {
-            sharpness = sharpness || 0.10;
-            const sz = 128;
-            const cvs = document.createElement('canvas');
-            cvs.width = cvs.height = sz;
-            const ctx = cvs.getContext('2d');
-            const h = sz / 2;
-            const grd = ctx.createRadialGradient(h, h, 0, h, h, h);
-            grd.addColorStop(0,             'rgba(' + r + ',' + g + ',' + b + ',1)');
-            grd.addColorStop(sharpness,     'rgba(' + r + ',' + g + ',' + b + ',0.7)');
-            grd.addColorStop(sharpness * 4, 'rgba(' + r + ',' + g + ',' + b + ',0.2)');
-            grd.addColorStop(0.7,           'rgba(' + r + ',' + g + ',' + b + ',0.04)');
-            grd.addColorStop(1,             'rgba(' + r + ',' + g + ',' + b + ',0)');
-            ctx.fillStyle = grd;
-            ctx.fillRect(0, 0, sz, sz);
-            return new THREE.CanvasTexture(cvs);
-        }
-
-        function addPoints(verts, grp, color, size, opacity, sprite, blend) {
-            if (!verts || verts.length === 0) return;
-            var geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-            grp.add(new THREE.Points(geo, new THREE.PointsMaterial({
-                color: color,
-                size: size,
-                transparent: true,
-                opacity: opacity,
-                map: sprite || null,
-                sizeAttenuation: true,
-                depthWrite: false,
-                blending: blend || THREE.AdditiveBlending
-            })));
-        }
-
-        // ── FOND : étoiles profondes ──────────────────────────────
-        function buildBackground() {
-            var sv = [];
-            for (var i = 0; i < 30000; i++)
-                sv.push((Math.random() - .5) * 80000, (Math.random() - .5) * 80000, (Math.random() - .5) * 80000);
-            addPoints(sv, bgGroup, 0xffffff, 1.1, 0.85, null);
-
-            var bv = [];
-            for (var i = 0; i < 10000; i++)
-                bv.push((Math.random() - .5) * 75000, (Math.random() - .5) * 75000, (Math.random() - .5) * 75000);
-            addPoints(bv, bgGroup, 0xd0e0ff, 0.75, 0.45, null);
-
-            var gv = [];
-            for (var i = 0; i < 5000; i++)
-                gv.push((Math.random() - .5) * 70000, (Math.random() - .5) * 70000, (Math.random() - .5) * 70000);
-            addPoints(gv, bgGroup, 0xffe8b0, 0.8, 0.3, null);
-        }
-
-        // ── GALAXIE SPIRALE style Andromède ───────────────────────
-        function buildGalaxy() {
-            var spCore  = makeSprite(255, 248, 220, 0.06);
-            var spArm   = makeSprite(210, 228, 255, 0.10);
-            var spOuter = makeSprite(190, 210, 255, 0.12);
-            var spDust  = makeSprite(25,  18,  15, 0.15);
-
-            // -- COEUR CENTRAL blanc-jaune dense --
-            var coreV = [];
-            for (var i = 0; i < 20000; i++) {
-                var r     = Math.abs(gaussRand()) * 70 + Math.random() * 25;
-                var theta = Math.random() * Math.PI * 2;
-                var phi   = Math.acos(2 * Math.random() - 1);
-                var flatY = Math.max(0.55 - r / 250, 0.08);
-                coreV.push(
-                    r * Math.sin(phi) * Math.cos(theta),
-                    r * Math.sin(phi) * Math.sin(theta) * flatY,
-                    r * Math.cos(phi)
-                );
-            }
-            addPoints(coreV,              galaxyGroup, 0xfff8e0, 20,  0.05,  spCore);
-            addPoints(coreV.slice(0,6000),galaxyGroup, 0xffffff,  7,  0.14,  spCore);
-            addPoints(coreV.slice(0,1500),galaxyGroup, 0xffffff,  3,  0.40,  null);
-
-            // -- BULBE INTERMEDIAIRE --
-            var bulgeV = [];
-            for (var i = 0; i < 12000; i++) {
-                var r     = 55 + Math.random() * 170;
-                var theta = Math.random() * Math.PI * 2;
-                var phi   = Math.acos(2 * Math.random() - 1);
-                bulgeV.push(
-                    r * Math.sin(phi) * Math.cos(theta),
-                    r * Math.sin(phi) * Math.sin(theta) * 0.26,
-                    r * Math.cos(phi)
-                );
-            }
-            addPoints(bulgeV, galaxyGroup, 0xfff0cc, 16, 0.030, spCore);
-
-            // -- BRAS SPIRAUX (2 principaux + 2 secondaires) --
-            var armV = [], armBrightV = [], dustV = [];
-
-            for (var arm = 0; arm < 2; arm++) {
-                var armOffset = (arm / 2) * Math.PI * 2;
-                for (var i = 0; i < 28000; i++) {
-                    var t       = i / 28000;
-                    var angle   = armOffset + t * Math.PI * 3.5 + (Math.random() - .5) * 0.32;
-                    var radius  = 120 + t * 600 + (Math.random() - .5) * 50;
-                    var scatter = (18 + t * 110) * (Math.random() - .5);
-                    var height  = (Math.random() - .5) * (7 + t * 16);
-                    var x = Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4;
-                    var z = Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4;
-                    armV.push(x, height, z);
-                    if (Math.random() < 0.055) armBrightV.push(x, height, z);
-                    if (Math.random() < 0.22) {
-                        var da = angle + 0.11;
-                        var dr = radius + (Math.random() - .5) * 38;
-                        dustV.push(Math.cos(da) * dr, height * 0.5, Math.sin(da) * dr);
-                    }
-                }
-            }
-            // Bras secondaires plus fins
-            for (var arm = 0; arm < 2; arm++) {
-                var armOffset = (arm / 2) * Math.PI * 2 + Math.PI / 2;
-                for (var i = 0; i < 8000; i++) {
-                    var t      = i / 8000;
-                    var angle  = armOffset + t * Math.PI * 3.0 + (Math.random() - .5) * 0.5;
-                    var radius = 170 + t * 430 + (Math.random() - .5) * 65;
-                    var scatter= (28 + t * 90) * (Math.random() - .5);
-                    var height = (Math.random() - .5) * (9 + t * 18);
-                    armV.push(
-                        Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4,
-                        height,
-                        Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4
-                    );
-                }
-            }
-
-            addPoints(armV,        galaxyGroup, 0xd8e8ff, 13,  0.026, spArm);
-            addPoints(armBrightV,  galaxyGroup, 0xffffff,  3,  0.55,  null);
-            addPoints(dustV,       galaxyGroup, 0x080508,  26,  0.20,  spDust, THREE.NormalBlending);
-
-            // -- DISQUE EXTERNE --
-            var outerV = [];
-            for (var i = 0; i < 15000; i++) {
-                var angle  = Math.random() * Math.PI * 2;
-                var radius = 280 + Math.pow(Math.random(), 1.5) * 480;
-                var height = (Math.random() - .5) * (10 + radius * 0.025);
-                outerV.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
-            }
-            addPoints(outerV, galaxyGroup, 0xc0d4f5, 9, 0.016, spOuter);
-
-            // -- HALO GALACTIQUE --
-            var haloV = [];
-            for (var i = 0; i < 5000; i++) {
-                var theta = Math.random() * Math.PI * 2;
-                var phi   = Math.acos(2 * Math.random() - 1);
-                var r     = 380 + Math.random() * 520;
-                haloV.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta) * 0.55, r * Math.cos(phi));
-            }
-            addPoints(haloV, galaxyGroup, 0xe8f0ff, 7, 0.011, spOuter);
-        }
-
-        // ── CEINTURE D'ASTÉROÏDES (système solaire, dans un bras) ─
-        function buildAsteroidBelt() {
-            var solarGroup = new THREE.Group();
-            solarGroup.position.set(420, 0, 280);
-
-            var sunSp = makeSprite(255, 245, 190, 0.04);
-            addPoints([0, 0, 0], solarGroup, 0xfff5aa, 18, 1.0, sunSp);
-            addPoints([0, 0, 0], solarGroup, 0xffdd60, 60, 0.4, sunSp);
-
-            var beltPos = [], dustPos = [], bigPos = [];
-            for (var i = 0; i < 5000; i++) {
-                var angle = Math.random() * Math.PI * 2;
-                var u     = Math.random() + Math.random();
-                var r     = 77 + (u < 1 ? u : 2 - u) * 35;
-                beltPos.push(Math.cos(angle) * r, (Math.random() - .5) * 4, Math.sin(angle) * r);
-            }
-            for (var i = 0; i < 3000; i++) {
-                var angle = Math.random() * Math.PI * 2;
-                var r     = 72 + Math.random() * 45;
-                dustPos.push(Math.cos(angle) * r, (Math.random() - .5) * 2.5, Math.sin(angle) * r);
-            }
-            for (var i = 0; i < 60; i++) {
-                var angle = Math.random() * Math.PI * 2;
-                var r     = 80 + Math.random() * 30;
-                bigPos.push(Math.cos(angle) * r, (Math.random() - .5) * 2, Math.sin(angle) * r);
-            }
-            addPoints(beltPos, solarGroup, 0xaa9988, 0.9, 0.50, null, THREE.NormalBlending);
-            addPoints(dustPos, solarGroup, 0xc09870, 0.4, 0.25, null, THREE.NormalBlending);
-            addPoints(bigPos,  solarGroup, 0xddccbb, 2.8, 0.65, null, THREE.NormalBlending);
-
-            galaxyGroup.add(solarGroup);
-        }
-
-        // ── PHOTOS VIP ───────────────────────────────────────────
-        var vipMeshes = [];
-        function buildVIP() {
-            var loader = new THREE.TextureLoader();
-            var maxA   = renderer.capabilities.getMaxAnisotropy();
-
-            for (var i = 0; i < 600; i++) {
-                var isVIP = i < 150;
-                var size  = isVIP ? 24 : 14;
-                var url   = (isVIP && i < mesPhotos.length)
-                    ? mesPhotos[i]
-                    : 'https://picsum.photos/id/' + (i + 100) + '/' + (isVIP ? 500 : 200) + '/' + (isVIP ? 500 : 200);
-
-                var tex = loader.load(url);
-                tex.anisotropy = maxA;
-                tex.minFilter  = THREE.LinearFilter;
-
-                var mat   = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: !isVIP, opacity: isVIP ? 1 : 0.7 });
-                var plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
-
-                if (isVIP) {
-                    var r = Math.random() * 110;
-                    var t = Math.random() * Math.PI * 2;
-                    var p = Math.random() * Math.PI;
-                    plane.position.set(r * Math.sin(p) * Math.cos(t), r * Math.sin(p) * Math.sin(t) * 0.5, r * Math.cos(p));
-                    plane.lookAt(0, 0, 0);
-                } else {
-                    var arm    = Math.floor(Math.random() * 2);
-                    var t2     = Math.random();
-                    var angle  = arm * Math.PI + t2 * Math.PI * 3.2 + (Math.random() - .5) * 0.4;
-                    var radius = 130 + t2 * 500 + (Math.random() - .5) * 50;
-                    var scatter= (20 + t2 * 100) * (Math.random() - .5);
-                    plane.position.set(
-                        Math.cos(angle) * radius + Math.sin(angle) * scatter * 0.4,
-                        (Math.random() - .5) * (6 + t2 * 14),
-                        Math.sin(angle) * radius + Math.cos(angle) * scatter * 0.4
-                    );
-                    plane.lookAt(0, 0, 0);
-                }
-                plane.userData = { hd: url };
-                galaxyGroup.add(plane);
-                if (isVIP) vipMeshes.push(plane);
-            }
-        }
-
-        // ── INIT ─────────────────────────────────────────────────
-        function init() {
-            scene    = new THREE.Scene();
-            camera   = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 200000);
-            camera.position.set(0, 320, 1600);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.setClearColor(0x00000a);
-            document.body.appendChild(renderer.domElement);
-
-            scene.add(bgGroup);
-            scene.add(galaxyGroup);
-            raycaster = new THREE.Raycaster();
-
-            // Inclinaison galaxie comme Andromède
-            galaxyGroup.rotation.x = 0.36;
-            galaxyGroup.rotation.z = 0.10;
-
-            buildBackground();
-            buildGalaxy();
-            buildAsteroidBelt();
-            buildVIP();
-
-            // Navigation WASD
-            window.addEventListener('keydown', function(e) { keys[e.code] = true; });
-            window.addEventListener('keyup',   function(e) { keys[e.code] = false; });
-
-            function applyNav() {
-                var SPEED = 8;
-                var fwd   = new THREE.Vector3();
-                camera.getWorldDirection(fwd);
-                var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
-                if (keys['KeyW'] || keys['ArrowUp'])    camera.position.addScaledVector(fwd,   SPEED);
-                if (keys['KeyS'] || keys['ArrowDown'])  camera.position.addScaledVector(fwd,  -SPEED);
-                if (keys['KeyA'] || keys['ArrowLeft'])  camera.position.addScaledVector(right, -SPEED);
-                if (keys['KeyD'] || keys['ArrowRight']) camera.position.addScaledVector(right,  SPEED);
-                if (keys['KeyQ']) camera.position.y += SPEED;
-                if (keys['KeyE']) camera.position.y -= SPEED;
-            }
-
-            // Drag
-            renderer.domElement.addEventListener('mousedown', function() { isDragging = true; });
-            window.addEventListener('mouseup',   function() { isDragging = false; });
-            window.addEventListener('mousemove', function(e) {
-                if (isDragging) {
-                    galaxyGroup.rotation.y += (e.clientX - prevMouse.x) * 0.004;
-                    galaxyGroup.rotation.x += (e.clientY - prevMouse.y) * 0.004;
-                    bgGroup.rotation.y     += (e.clientX - prevMouse.x) * 0.0003;
-                }
-                prevMouse = { x: e.clientX, y: e.clientY };
-                mouse.x   =  (e.clientX / window.innerWidth)  * 2 - 1;
-                mouse.y   = -(e.clientY / window.innerHeight) * 2 + 1;
-            });
-
-            // Scroll → avancer
-            window.addEventListener('wheel', function(e) {
-                var dir = new THREE.Vector3();
-                camera.getWorldDirection(dir);
-                camera.position.addScaledVector(dir, -e.deltaY * 1.5);
-            }, { passive: true });
-
-            // Touch
-            renderer.domElement.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 2) {
-                    initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                } else {
-                    isDragging = true;
-                    prevMouse  = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    mouse.x    =  (e.touches[0].clientX / window.innerWidth)  * 2 - 1;
-                    mouse.y    = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-                }
-            }, { passive: false });
-            window.addEventListener('touchend', function() { isDragging = false; initialPinchDistance = null; });
-            window.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 2 && initialPinchDistance) {
-                    var d   = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    var dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-                    camera.position.addScaledVector(dir, (initialPinchDistance - d) * 2);
-                    initialPinchDistance = d;
-                } else if (isDragging && e.touches.length === 1) {
-                    galaxyGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.004;
-                    galaxyGroup.rotation.x += (e.touches[0].clientY - prevMouse.y) * 0.004;
-                    bgGroup.rotation.y     += (e.touches[0].clientX - prevMouse.x) * 0.0003;
-                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
-                e.preventDefault();
-            }, { passive: false });
-
-            // Click photo
-            var dragDist = 0;
-            renderer.domElement.addEventListener('mousedown', function() { dragDist = 0; });
-            window.addEventListener('mousemove', function() { if (isDragging) dragDist++; });
-            renderer.domElement.addEventListener('click', function(e) {
-                if (dragDist > 4) return;
-                raycaster.setFromCamera(mouse, camera);
-                var hits = raycaster.intersectObjects(vipMeshes);
-                if (hits.length > 0) {
-                    document.getElementById('zoom-img').src = hits[0].object.userData.hd;
-                    document.getElementById('preview-box').style.display = 'block';
-                }
-            });
-
-            // Boucle
-            function animate() {
-                requestAnimationFrame(animate);
-                applyNav();
-                if (!isDragging) {
-                    galaxyGroup.rotation.y += 0.00012;
-                    bgGroup.rotation.y     += 0.00002;
-                }
-                var anyKey = keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']||keys['KeyQ']||keys['KeyE'];
-                if (!anyKey) camera.lookAt(0, 0, 0);
-                renderer.render(scene, camera);
-            }
-            animate();
-        }
-
-        window.addEventListener('resize', function() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        init();
-    </script>
-</body>
-</html>
+        // Bulbe intermédiaire (transition noyau → bras)
+        var bulgeV = [];
+        for (var i = 0; i < 6000; i++) {
+            var r     = 60 + Math
