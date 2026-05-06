@@ -13,7 +13,7 @@
         }
         #vip-counter {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 8px 20px; 
+            background: linear-gradient(90deg, #ff0055, #ffcc00); padding: 8px 20px;
             border-radius: 50px; font-weight: bold; z-index: 1000; box-shadow: 0 0 20px #ff0055;
             font-size: 14px; white-space: nowrap;
         }
@@ -21,225 +21,492 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; max-width: 400px; background: rgba(0,0,0,0.95); border: 2px solid #00d4ff;
             padding: 25px; border-radius: 20px; z-index: 7000; display: none; text-align: left;
-            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+            line-height: 1.5; font-size: 14px; box-shadow: 0 0 50px rgba(0,212,255,0.3);
         }
         #preview-box {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; max-width: 350px; background: rgba(0,0,0,0.98); border: 2px solid #ffcc00;
             padding: 20px; border-radius: 20px; z-index: 6000; display: none; text-align: center;
         }
-        #zoom-img { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px; image-rendering: high-quality; }
+        #zoom-img { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 15px; }
         #ui { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 100%; text-align: center; }
-        .pay-btn {
-            background: #fff; color: #000; padding: 15px 30px; border-radius: 50px;
-            font-size: 18px; font-weight: 900; cursor: pointer; border: none;
-            box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .pay-btn { background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; font-size: 18px; font-weight: 900; cursor: pointer; border: none; box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
         .close-btn { background: #00d4ff; color: black; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        #nav-hint { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.22); z-index: 1000; pointer-events: none; white-space: nowrap; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
-    <div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
+<div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
+<div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
+<div id="info-modal">
+    <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
+    <p><b>Concept :</b> 5000 places pour l'eternite dans le Saturn Project.</p>
+    <p><b>Inscription :</b> Paiement 1 euro - Formulaire - Ta photo dans le noyau.</p>
+    <p><b>RoadMap :</b> Prochainement : systeme solaire complet, Hubble live.</p>
+    <p><b>Controles :</b> Drag tourner. Scroll avancer. WASD naviguer. Q/E haut/bas.</p>
+    <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">FERMER</button>
+</div>
+<div id="preview-box">
+    <img id="zoom-img" src="">
+    <p style="color:#ffcc00; margin:5px 0; font-weight:bold;">FOUNDING MEMBER</p>
+    <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%;background:white;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;">BACK</button>
+</div>
+<div id="ui">
+    <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1 euro)</button>
+</div>
+<div id="nav-hint">WASD naviguer - Scroll avancer - Q/E haut/bas</div>
 
-    <div id="info-modal">
-        <h2 style="color:#00d4ff; margin-top:0;">THE CORE / LE NOYAU</h2>
-        <p><b>📍 Concept :</b> 5000 spots for eternity. (5000 places pour l'éternité).</p>
-        <p><b>📝 Inscription :</b> Payment (1€) -> Form -> Your star. (Paiement (1€) -> Formulaire -> Ton étoile).</p>
-        <p><b>🚀 RoadMap :</b> Next: Solar System & Hubble live tracking. (Prochainement : Système solaire et suivi Hubble en direct).</p>
-        <p><b>📱 Controls :</b> 1 finger to rotate / 2 fingers to zoom. (1 doigt pour tourner / 2 doigts pour zoomer).</p>
-        <p><b>✨ Explore :</b> Use zoom to navigate *inside* the 3D nebula. (Utilise le zoom pour naviguer *dans* la nébuleuse 3D).</p>
-        <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">CLOSE / FERMER</button>
-    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
 
-    <div id="preview-box">
-        <img id="zoom-img" src="">
-        <p style="color:#ffcc00; margin: 5px 0; font-weight: bold;">★ FOUNDING MEMBER ★</p>
-        <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%; background:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">BACK</button>
-    </div>
+var scene, camera, renderer, raycaster;
+var mouse        = new THREE.Vector2();
+var mainGroup    = new THREE.Group(); // noyau original intact
+var skyGroup     = new THREE.Group(); // univers 3D infini
+var saturnObj    = null;
+var isDragging   = false;
+var prevMouse    = { x:0, y:0 };
+var initialPinch = null;
+var dragDist     = 0;
+var keys         = {};
+var allMeshes    = [];
 
-    <div id="ui">
-        <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1€)</button>
-    </div>
+var mesPhotos = ['Thefirst.jpg.jpg','Thesecond.jpg.jpg','Thethird.jpg.jpg'];
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        let scene, camera, renderer, raycaster, mouse = new THREE.Vector2();
-        let mainGroup = new THREE.Group();
-        let skyGroup = new THREE.Group(); // Ton groupe de fond existant
-        let nebulaGroup = new THREE.Group(); // Le nouveau groupe de gaz volumétrique
-        let isDragging = false, prevMouse = { x: 0, y: 0 };
-        let initialPinchDistance = null;
+// sprite particule douce
+function makeSprite(r,g,b,s) {
+    s = s||0.10;
+    var sz=128, c=document.createElement('canvas');
+    c.width=c.height=sz;
+    var ctx=c.getContext('2d'), h=sz/2;
+    var g2=ctx.createRadialGradient(h,h,0,h,h,h);
+    g2.addColorStop(0,       'rgba('+r+','+g+','+b+',1)');
+    g2.addColorStop(s,       'rgba('+r+','+g+','+b+',0.7)');
+    g2.addColorStop(s*4,     'rgba('+r+','+g+','+b+',0.18)');
+    g2.addColorStop(0.65,    'rgba('+r+','+g+','+b+',0.03)');
+    g2.addColorStop(1,       'rgba('+r+','+g+','+b+',0)');
+    ctx.fillStyle=g2; ctx.fillRect(0,0,sz,sz);
+    return new THREE.CanvasTexture(c);
+}
 
-        const mesPhotos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
+function pts(v,grp,col,sz,op,sp,bl) {
+    if(!v||!v.length) return;
+    var g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+    var m=new THREE.PointsMaterial({color:col,size:sz,transparent:true,opacity:op,sizeAttenuation:true,depthWrite:false,blending:bl!==undefined?bl:THREE.AdditiveBlending});
+    if(sp) m.map=sp;
+    grp.add(new THREE.Points(g,m));
+}
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 30000);
-            camera.position.set(0, 150, 400);
+// ══════════════════════════════════════════════════════
+//  UNIVERS 3D INFINI — PAS de texture de fond
+//  Tout est en particules 3D dans l'espace
+// ══════════════════════════════════════════════════════
+function buildInfiniteUniverse() {
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            document.body.appendChild(renderer.domElement);
-            
-            scene.add(mainGroup);
-            scene.add(skyGroup);
-            scene.add(nebulaGroup); // Ajout du groupe de gaz
-            raycaster = new THREE.Raycaster();
+    // ── 1. CHAMP D'ETOILES PRINCIPAL ─────────────────────
+    // Distribue sur une sphere creuse pour donner
+    // l'impression d'etre AU MILIEU de l'univers
+    var sv=[], bv=[], wv=[];
+    for(var i=0;i<40000;i++) {
+        // Distribution spherique pour un vrai fond immersif
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+        var r=2000+Math.random()*28000;
+        sv.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph));
+    }
+    for(var i=0;i<12000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+        var r=1500+Math.random()*25000;
+        bv.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph));
+    }
+    for(var i=0;i<6000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+        var r=1000+Math.random()*20000;
+        wv.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph));
+    }
+    pts(sv, skyGroup, 0xffffff, 1.0, 0.90, null);
+    pts(bv, skyGroup, 0xc8dcff, 0.75, 0.45, null);
+    pts(wv, skyGroup, 0xffd090, 0.80, 0.28, null);
 
-            // --- FOND 3D INTERACTIF (TON EXISTANT SPHÉRIQUE) ---
-            const loader = new THREE.TextureLoader();
-            const spaceTexture = loader.load('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=2048&q=80');
-            const skyGeometry = new THREE.SphereGeometry(15000, 60, 40);
-            skyGeometry.scale(-1, 1, 1); 
-            const skyMaterial = new THREE.MeshBasicMaterial({ map: spaceTexture });
-            skyGroup.add(new THREE.Mesh(skyGeometry, skyMaterial));
+    // Etoiles tres brillantes (hero stars)
+    var hv=[];
+    for(var i=0;i<180;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=3000+Math.random()*15000;
+        hv.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph));
+    }
+    pts(hv, skyGroup, 0xffffff, 10, 0.88, makeSprite(255,255,255,0.05));
 
-            // Les étoiles de fond existantes
-            const starGeometry = new THREE.BufferGeometry();
-            const starPos = [];
-            for (let i = 0; i < 20000; i++) {
-                starPos.push((Math.random()-0.5)*25000, (Math.random()-0.5)*25000, (Math.random()-0.5)*25000);
-            }
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            skyGroup.add(new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.9 })));
+    // ── 2. NUAGES DE GAZ 3D ──────────────────────────────
+    // Pas d image — seulement des particules douces
+    // Couleurs tres desaturees, comme des vraies nebuleuses vues de loin
+    var nebDefs = [
+        // position 3D,               couleur RVB,         spread,  npart, taille
+        { p:[4500, 300,-7000],  c:[180,170,210], sp:3200, n:1200, sz:280 },  // bleu-violet pale
+        { p:[-6000,-200,5000],  c:[210,175,155], sp:2800, n:1000, sz:250 },  // brun chaud
+        { p:[2000, 800,-10000], c:[155,185,200], sp:3500, n:1100, sz:300 },  // bleu-gris
+        { p:[-8000,100,-2000],  c:[200,180,150], sp:3000, n:900,  sz:260 },  // beige
+        { p:[1000,-600,9000],   c:[170,190,210], sp:3200, n:1000, sz:280 },  // bleu pale
+        { p:[-3000,500,-8000],  c:[205,185,165], sp:2600, n:850,  sz:240 },  // sable
+        { p:[8000,-100,3000],   c:[165,185,205], sp:3400, n:950,  sz:290 },  // gris-bleu
+        { p:[-5000,-400,7000],  c:[195,175,155], sp:2900, n:900,  sz:255 }   // ocre pale
+    ];
 
-            // --- INJECTION DU GAZ VOLUMÉTRIQUE 3D (FUSION) ---
-            // Texture de fumée circulaire
-            loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/terrain/cloud.png', function(texture) {
-                const nebulaGeo = new THREE.PlaneBufferGeometry(2500, 2500);
-                for (let i = 0; i < 60; i++) {
-                    const nebulaMat = new THREE.MeshBasicMaterial({
-                        map: texture,
-                        transparent: true,
-                        opacity: 0.15, // Très subtil pour l'effet de gaz
-                        blending: THREE.AdditiveBlending, // Pour que les nuages s'illuminent entre eux
-                        depthWrite: false,
-                        side: THREE.DoubleSide
-                    });
-                    const cloud = new THREE.Mesh(nebulaGeo, nebulaMat);
-                    // Placement aléatoire dans un immense volume 3D
-                    cloud.position.set((Math.random()-0.5)*12000, (Math.random()-0.5)*12000, (Math.random()-0.5)*12000);
-                    cloud.rotation.z = Math.random() * Math.PI;
-                    // Teinte de la nébuleuse (Bleu / Violet / Cyan)
-                    const colors = [0x00d4ff, 0x7700ff, 0x0022ff];
-                    cloud.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
-                    nebulaGroup.add(cloud);
-                }
-            });
+    nebDefs.forEach(function(def) {
+        var R=def.c[0], G=def.c[1], B=def.c[2];
+        var sp1=makeSprite(R,G,B,0.08);
+        var sp2=makeSprite(Math.min(R+40,255),Math.min(G+40,255),Math.min(B+40,255),0.06);
+        var col1=new THREE.Color(R/255,G/255,B/255);
+        var col2=new THREE.Color(Math.min(R+30,255)/255,Math.min(G+30,255)/255,Math.min(B+30,255)/255);
 
-            // --- OBJETS VIP (VOTRE EXISTANT) ---
-            const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-            for (let i = 0; i < 600; i++) {
-                let size = (i < 150) ? 24 : 14;
-                let isVIP = i < 150;
-                let textureURL = (i < mesPhotos.length) ? mesPhotos[i] : `https://picsum.photos/id/${i+100}/500/500`;
-                const texture = loader.load(textureURL);
-                texture.anisotropy = maxAnisotropy;
-                texture.minFilter = THREE.LinearFilter;
-                const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: !isVIP, opacity: isVIP ? 1 : 0.7 });
-                const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
-                
-                if (isVIP) { 
-                    const dist = Math.random() * 120;
-                    const t = Math.random() * Math.PI * 2;
-                    const p = Math.random() * Math.PI;
-                    plane.position.set(dist * Math.sin(p) * Math.cos(t), dist * Math.sin(p) * Math.sin(t), dist * Math.cos(p));
-                    plane.lookAt(0,0,0);
-                } else {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 200 + Math.random() * 350;
-                    plane.position.set(Math.cos(angle)*radius, (Math.random()-0.5)*40, Math.sin(angle)*radius);
-                    plane.lookAt(0, plane.position.y, 0);
-                }
-                plane.userData = { hd: textureURL };
-                mainGroup.add(plane);
-            }
-
-            // --- LUMIÈRE CENTRALE POUR LE NOYAU (FUSION) ---
-            const coreLight = new THREE.PointLight(0x00d4ff, 2, 2000);
-            coreLight.position.set(0,0,0);
-            scene.add(coreLight);
-
-            // --- GESTION TOUCHER & SOURIS (VOTRE EXISTANT) ---
-            window.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) initialPinchDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                else { isDragging = true; prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
-            }, { passive: false });
-
-            window.addEventListener('touchend', () => { isDragging = false; initialPinchDistance = null; });
-
-            window.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && initialPinchDistance) {
-                    const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                    camera.position.z += (initialPinchDistance - currentDistance) * 1.5; // Zoom profond
-                    initialPinchDistance = currentDistance;
-                } else if (isDragging && e.touches.length === 1) {
-                    mainGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.touches[0].clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.001;
-                    nebulaGroup.rotation.y += (e.touches[0].clientX - prevMouse.x) * 0.0005; // Rotation lente du gaz
-                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
-                e.preventDefault(); 
-            }, { passive: false });
-
-            window.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    mainGroup.rotation.y += (e.clientX - prevMouse.x) * 0.005;
-                    mainGroup.rotation.x += (e.clientY - prevMouse.y) * 0.005;
-                    skyGroup.rotation.y += (e.clientX - prevMouse.x) * 0.001;
-                    nebulaGroup.rotation.y += (e.clientX - prevMouse.x) * 0.0005;
-                }
-                prevMouse = { x: e.clientX, y: e.clientY };
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-            });
-            window.addEventListener('mousedown', () => isDragging = true);
-            window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('wheel', (e) => { camera.position.z += e.deltaY * 1.0; }); // Zoom molette profond
-            window.addEventListener('click', handleSelect);
-            window.addEventListener('touchend', (e) => { if(!isDragging && e.touches.length === 0) handleSelect(e); });
-
-            function handleSelect(e) {
-                if (e.target.tagName !== 'CANVAS') return;
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(mainGroup.children);
-                if (intersects.length > 0) {
-                    document.getElementById('zoom-img').src = intersects[0].object.userData.hd;
-                    document.getElementById('preview-box').style.display = 'block';
-                }
-            }
-            animate();
+        // Halo tres large et tres transparent
+        var hv=[];
+        for(var i=0;i<def.n;i++) {
+            var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.sp*1.8;
+            hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th), def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.35, def.p[2]+r*Math.cos(ph));
         }
+        pts(hv, skyGroup, col1, def.sz*3.0, 0.008, sp1);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if(!isDragging) {
-                mainGroup.rotation.y += 0.0008;
-                skyGroup.rotation.y += 0.0001; 
-                nebulaGroup.rotation.y += 0.00005; // Le gaz tourne très lentement
-            }
-            
-            // Effet Billboarding : les nuages font toujours face à la caméra pour l'effet 3D infini
-            nebulaGroup.children.forEach(cloud => {
-                cloud.lookAt(camera.position);
-            });
-
-            camera.lookAt(0,0,0);
-            renderer.render(scene, camera);
+        // Corps principal
+        var mv=[];
+        for(var i=0;i<Math.floor(def.n*0.7);i++) {
+            var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.sp;
+            mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th), def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.40, def.p[2]+r*Math.cos(ph));
         }
+        pts(mv, skyGroup, col1, def.sz*1.2, 0.022, sp1);
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // Coeur plus dense
+        var cv=[];
+        for(var i=0;i<Math.floor(def.n*0.25);i++) {
+            var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.sp*0.35;
+            cv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th), def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.45, def.p[2]+r*Math.cos(ph));
+        }
+        pts(cv, skyGroup, col2, def.sz*0.45, 0.055, sp2);
 
-        init();
-    </script>
+        // Etoiles plus brillantes dans la nebuleuse
+        var ev=[];
+        for(var i=0;i<80;i++) {
+            var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=Math.random()*def.sp*0.8;
+            ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th), def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4, def.p[2]+r*Math.cos(ph));
+        }
+        pts(ev, skyGroup, 0xffffff, 1.5, 0.70, null);
+    });
+
+    // ── 3. AMAS GLOBULAIRES ────────────────────────────────
+    var spCluster=makeSprite(255,248,220,0.06);
+    var clusters=[
+        [3500,400,-4000],[-4200,200,2800],[2000,-600,5000],
+        [-1500,800,-5500],[5500,-200,1500],[-3000,-500,-3000],
+        [4000,600,3500],[-5000,100,-1500],[1000,-900,4500],
+        [-2500,700,4000],[3800,-400,-3200],[-4500,300,500],
+        [6500,200,-1800],[-2800,900,6000],[500,-1100,-5500]
+    ];
+    clusters.forEach(function(pos) {
+        var cv=[],cb=[];
+        var spread=55+Math.random()*75;
+        for(var i=0;i<600;i++) {
+            var r=Math.cbrt(Math.random())*spread,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+            cv.push(pos[0]+r*Math.sin(ph)*Math.cos(th),pos[1]+r*Math.sin(ph)*Math.sin(th),pos[2]+r*Math.cos(ph));
+        }
+        for(var i=0;i<100;i++) {
+            var r=Math.cbrt(Math.random())*spread*0.3,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+            cb.push(pos[0]+r*Math.sin(ph)*Math.cos(th),pos[1]+r*Math.sin(ph)*Math.sin(th),pos[2]+r*Math.cos(ph));
+        }
+        pts(cv, skyGroup, 0xfff5e0, 4.5, 0.55, spCluster);
+        pts(cb, skyGroup, 0xffffff, 2.0, 0.90, null);
+    });
+
+    // ── 4. CHAMPS D'ASTEROIDES ────────────────────────────
+    // Spirales, anneaux, trainées — partout dans l'univers
+
+    // Spirale 1
+    var a1=[]; var c1=[2800,100,1200];
+    for(var i=0;i<3000;i++){var t=i/3000,angle=t*Math.PI*5+(Math.random()-0.5)*0.6,r=80+t*300+(Math.random()-0.5)*40; a1.push(c1[0]+Math.cos(angle)*r,(Math.random()-0.5)*25,c1[2]+Math.sin(angle)*r);}
+    pts(a1,skyGroup,0xb8a898,1.1,0.55,null,THREE.NormalBlending);
+    pts([c1[0],c1[1],c1[2]],skyGroup,0xfff5aa,22,1.0,makeSprite(255,245,170,0.04));
+
+    // Nuage dense 2
+    var a2=[],a2b=[];var c2=[-3200,-200,2500];
+    for(var i=0;i<2500;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=30+Math.cbrt(Math.random())*220; a2.push(c2[0]+r*Math.sin(ph)*Math.cos(th)*1.8,c2[1]+r*Math.sin(ph)*Math.sin(th)*0.5,c2[2]+r*Math.cos(ph)*1.5);}
+    for(var i=0;i<50;i++){var a=Math.random()*Math.PI*2,r=50+Math.random()*180; a2b.push(c2[0]+Math.cos(a)*r,(Math.random()-0.5)*40,c2[2]+Math.sin(a)*r);}
+    pts(a2,skyGroup,0xaa9984,0.9,0.50,null,THREE.NormalBlending);
+    pts(a2b,skyGroup,0xccbbaa,3.5,0.70,null,THREE.NormalBlending);
+
+    // Double spirale 3
+    var a3=[]; var c3=[4500,300,-2800];
+    for(var arm=0;arm<2;arm++){for(var i=0;i<1500;i++){var t=i/1500,angle=arm*Math.PI+t*Math.PI*2.5+(Math.random()-0.5)*0.4,r=40+t*200+(Math.random()-0.5)*30; a3.push(c3[0]+Math.cos(angle)*r,(Math.random()-0.5)*15,c3[2]+Math.sin(angle)*r);}}
+    pts(a3,skyGroup,0xc0ae9a,1.0,0.52,null,THREE.NormalBlending);
+
+    // Trainee debris 4
+    var a4=[]; var c4=[-1500,500,-4500];
+    for(var i=0;i<2000;i++){var t=(i/2000)-0.5,x=t*800+(Math.random()-0.5)*120; a4.push(c4[0]+x,c4[1]+(Math.random()-0.5)*60+Math.abs(x)*0.05,c4[2]+(Math.random()-0.5)*120);}
+    pts(a4,skyGroup,0xb0a090,0.8,0.45,null,THREE.NormalBlending);
+
+    // Anneau incline 5
+    var a5=[],a5b=[]; var c5=[5200,-400,800];
+    for(var i=0;i<2200;i++){var angle=Math.random()*Math.PI*2,u=Math.random()+Math.random(),r=100+(u<1?u:2-u)*80,x=Math.cos(angle)*r,z=Math.sin(angle)*r,y=(Math.random()-0.5)*18+x*Math.tan(0.52)*0.3; a5.push(c5[0]+x,c5[1]+y,c5[2]+z);}
+    for(var i=0;i<40;i++){var a=Math.random()*Math.PI*2,r=105+Math.random()*70; a5b.push(c5[0]+Math.cos(a)*r,c5[1]+(Math.random()-0.5)*8,c5[2]+Math.sin(a)*r);}
+    pts(a5,skyGroup,0xbcac9c,1.0,0.50,null,THREE.NormalBlending);
+    pts(a5b,skyGroup,0xddd0c0,3.8,0.72,null,THREE.NormalBlending);
+
+    // Spirale serree 6
+    var a6=[]; var c6=[1200,-700,-3500];
+    for(var i=0;i<2500;i++){var t=i/2500,angle=t*Math.PI*6+(Math.random()-0.5)*0.3,r=20+t*150+(Math.random()-0.5)*25; a6.push(c6[0]+Math.cos(angle)*r,(Math.random()-0.5)*12,c6[2]+Math.sin(angle)*r);}
+    pts(a6,skyGroup,0xc8b8a8,0.95,0.55,null,THREE.NormalBlending);
+
+    // Arc courbe 7
+    var a7=[]; var c7=[-2000,-300,5500];
+    for(var i=0;i<1600;i++){var t=i/1600,angle=t*Math.PI*1.5-Math.PI*0.75,r=200+(Math.random()-0.5)*60; a7.push(c7[0]+Math.cos(angle)*r,(Math.random()-0.5)*30,c7[2]+Math.sin(angle)*r);}
+    pts(a7,skyGroup,0xb0a090,0.9,0.48,null,THREE.NormalBlending);
+
+    // Spirale lointaine 8
+    var a8=[],a8b=[]; var c8=[-3800,200,-1800];
+    for(var i=0;i<2800;i++){var t=i/2800,angle=t*Math.PI*4+(Math.random()-0.5)*0.5,r=50+t*250+(Math.random()-0.5)*35; a8.push(c8[0]+Math.cos(angle)*r,(Math.random()-0.5)*20,c8[2]+Math.sin(angle)*r);}
+    for(var i=0;i<60;i++){var a=Math.random()*Math.PI*2,r=30+Math.random()*200; a8b.push(c8[0]+Math.cos(a)*r,(Math.random()-0.5)*15,c8[2]+Math.sin(a)*r);}
+    pts(a8,skyGroup,0xb8aa98,1.0,0.52,null,THREE.NormalBlending);
+    pts(a8b,skyGroup,0xddd0be,4.0,0.75,null,THREE.NormalBlending);
+
+    // Spirale 9
+    var a9=[]; var c9=[6800,500,-3500];
+    for(var i=0;i<2200;i++){var t=i/2200,angle=t*Math.PI*3.5+(Math.random()-0.5)*0.4,r=60+t*220+(Math.random()-0.5)*30; a9.push(c9[0]+Math.cos(angle)*r,(Math.random()-0.5)*18,c9[2]+Math.sin(angle)*r);}
+    pts(a9,skyGroup,0xc0b0a0,1.0,0.50,null,THREE.NormalBlending);
+
+    // Anneau lointain 10
+    var a10=[]; var c10=[-7000,300,2500];
+    for(var i=0;i<1800;i++){var angle=Math.random()*Math.PI*2,u=Math.random()+Math.random(),r=120+(u<1?u:2-u)*90; a10.push(c10[0]+Math.cos(angle)*r,(Math.random()-0.5)*14,c10[2]+Math.sin(angle)*r);}
+    pts(a10,skyGroup,0xb5a595,0.95,0.48,null,THREE.NormalBlending);
+
+    // ── 5. ETOILES FILANTES ───────────────────────────────
+    for(var i=0;i<35;i++){
+        var x=(Math.random()-0.5)*25000,y=(Math.random()-0.5)*12000,z=(Math.random()-0.5)*25000;
+        var len=100+Math.random()*280;
+        var dx=Math.random()-0.5,dy=(Math.random()-0.5)*0.25,dz=Math.random()-0.5;
+        var dn=Math.sqrt(dx*dx+dy*dy+dz*dz);dx/=dn;dy/=dn;dz/=dn;
+        var geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,y,z),new THREE.Vector3(x+dx*len,y+dy*len,z+dz*len)]);
+        skyGroup.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.20+Math.random()*0.40,depthWrite:false})));
+    }
+}
+
+// ══════════════════════════════════════════════════════
+//  SATURNE avec anneaux
+// ══════════════════════════════════════════════════════
+function buildSaturn() {
+    var grp = new THREE.Group();
+
+    // Texture planete
+    var cvs=document.createElement('canvas'); cvs.width=512; cvs.height=256;
+    var ctx=cvs.getContext('2d');
+    var bg=ctx.createLinearGradient(0,0,0,256);
+    bg.addColorStop(0,'#5a4830');bg.addColorStop(0.15,'#b8894a');bg.addColorStop(0.30,'#d4a855');
+    bg.addColorStop(0.45,'#c89040');bg.addColorStop(0.50,'#e0b060');bg.addColorStop(0.55,'#c89040');
+    bg.addColorStop(0.70,'#d4a855');bg.addColorStop(0.85,'#b8894a');bg.addColorStop(1,'#5a4830');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,512,256);
+    [[0.06,0.05,0.45],[0.18,0.07,0.35],[0.32,0.09,0.40],[0.47,0.06,0.30],[0.63,0.09,0.40],[0.76,0.07,0.35],[0.88,0.05,0.45]].forEach(function(b){
+        var bg2=ctx.createLinearGradient(0,b[0]*256,0,(b[0]+b[1])*256);
+        bg2.addColorStop(0,'rgba(50,30,5,0)');bg2.addColorStop(0.5,'rgba(50,30,5,'+b[2]+')');bg2.addColorStop(1,'rgba(50,30,5,0)');
+        ctx.fillStyle=bg2; ctx.fillRect(0,b[0]*256,512,b[1]*256);
+    });
+
+    var sphere=new THREE.Mesh(new THREE.SphereGeometry(55,64,64),new THREE.MeshPhongMaterial({map:new THREE.CanvasTexture(cvs),shininess:6}));
+    grp.add(sphere);
+    saturnObj = sphere;
+
+    // Anneaux
+    var rc=document.createElement('canvas'); rc.width=256; rc.height=4;
+    var rctx=rc.getContext('2d');
+    var rg=rctx.createLinearGradient(0,0,256,0);
+    rg.addColorStop(0,'rgba(180,150,70,0)');rg.addColorStop(0.05,'rgba(195,165,80,0.4)');
+    rg.addColorStop(0.18,'rgba(220,190,100,0.80)');rg.addColorStop(0.32,'rgba(235,205,115,0.85)');
+    rg.addColorStop(0.44,'rgba(195,170,85,0.65)');rg.addColorStop(0.48,'rgba(100,80,38,0.18)');
+    rg.addColorStop(0.52,'rgba(100,80,38,0.18)');rg.addColorStop(0.56,'rgba(195,170,85,0.65)');
+    rg.addColorStop(0.70,'rgba(220,190,100,0.80)');rg.addColorStop(0.84,'rgba(190,165,80,0.55)');
+    rg.addColorStop(0.94,'rgba(160,135,60,0.30)');rg.addColorStop(1,'rgba(140,115,50,0)');
+    rctx.fillStyle=rg; rctx.fillRect(0,0,256,4);
+    var rTex=new THREE.CanvasTexture(rc);
+
+    [[68,80,0.28],[82,118,0.85],[120,142,0.65],[145,152,0.20]].forEach(function(rd){
+        var rGeo=new THREE.RingGeometry(rd[0],rd[1],128,1);
+        var uv=rGeo.attributes.uv,pos=rGeo.attributes.position,v3=new THREE.Vector3();
+        for(var i=0;i<pos.count;i++){v3.fromBufferAttribute(pos,i);uv.setXY(i,(v3.length()-rd[0])/(rd[1]-rd[0]),0.5);}
+        var rMesh=new THREE.Mesh(rGeo,new THREE.MeshBasicMaterial({map:rTex,side:THREE.DoubleSide,transparent:true,opacity:rd[2],depthWrite:false}));
+        rMesh.rotation.x=Math.PI*0.43; grp.add(rMesh);
+    });
+
+    // Halo atmosphere
+    grp.add(new THREE.Mesh(new THREE.SphereGeometry(62,32,32),new THREE.MeshBasicMaterial({color:0xc89040,transparent:true,opacity:0.06,side:THREE.BackSide,depthWrite:false})));
+
+    var sun=new THREE.DirectionalLight(0xfff5e0,2.0); sun.position.set(400,200,300); scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x181822,2.5));
+
+    grp.position.set(900,80,-350);
+    grp.rotation.z = 0.07;
+    scene.add(grp);
+    return grp;
+}
+
+// ══════════════════════════════════════════════════════
+//  NOYAU ORIGINAL — code original INTACT, pas touche
+// ══════════════════════════════════════════════════════
+function buildNoyau() {
+    var loader = new THREE.TextureLoader();
+    var maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    for (var i = 0; i < 600; i++) {
+        var size, textureURL, isVIP;
+        if (i < 150) {
+            size = 24; isVIP = true;
+            textureURL = (i < mesPhotos.length) ? mesPhotos[i] : 'https://picsum.photos/id/'+(i+100)+'/500/500';
+        } else {
+            size = 14; isVIP = false;
+            textureURL = 'https://picsum.photos/id/'+(i+100)+'/200/200';
+        }
+        var texture = loader.load(textureURL);
+        texture.anisotropy = maxAnisotropy;
+        texture.minFilter = THREE.LinearFilter;
+        var mat = new THREE.MeshBasicMaterial({map:texture, side:THREE.DoubleSide, transparent:!isVIP, opacity:isVIP?1:0.7});
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(size,size), mat);
+        if (isVIP) {
+            var dist = Math.random()*120;
+            var t    = Math.random()*Math.PI*2;
+            var p    = Math.random()*Math.PI;
+            plane.position.set(dist*Math.sin(p)*Math.cos(t), dist*Math.sin(p)*Math.sin(t), dist*Math.cos(p));
+            plane.lookAt(0,0,0);
+        } else {
+            var angle  = Math.random()*Math.PI*2;
+            var radius = 200+Math.random()*350;
+            plane.position.x = Math.cos(angle)*radius;
+            plane.position.z = Math.sin(angle)*radius;
+            plane.position.y = (Math.random()-0.5)*40;
+            plane.lookAt(0, plane.position.y, 0);
+        }
+        plane.userData = {hd: textureURL};
+        mainGroup.add(plane);
+        allMeshes.push(plane);
+    }
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+function init() {
+    scene  = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 60000);
+    camera.position.set(0, 150, 400);
+
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.setClearColor(0x000005, 1);
+    document.body.appendChild(renderer.domElement);
+
+    scene.add(skyGroup);
+    scene.add(mainGroup);
+    raycaster = new THREE.Raycaster();
+
+    buildInfiniteUniverse();
+    buildSaturn();
+    buildNoyau();
+
+    // CLAVIER
+    window.addEventListener('keydown',function(e){keys[e.code]=true;});
+    window.addEventListener('keyup',  function(e){keys[e.code]=false;});
+
+    function applyNav() {
+        var SPEED=8;
+        var fwd=new THREE.Vector3(); camera.getWorldDirection(fwd);
+        var right=new THREE.Vector3().crossVectors(fwd,new THREE.Vector3(0,1,0)).normalize();
+        if(keys['KeyW']||keys['ArrowUp'])    camera.position.addScaledVector(fwd,   SPEED);
+        if(keys['KeyS']||keys['ArrowDown'])  camera.position.addScaledVector(fwd,  -SPEED);
+        if(keys['KeyA']||keys['ArrowLeft'])  camera.position.addScaledVector(right, -SPEED);
+        if(keys['KeyD']||keys['ArrowRight']) camera.position.addScaledVector(right,  SPEED);
+        if(keys['KeyQ']) camera.position.y+=SPEED;
+        if(keys['KeyE']) camera.position.y-=SPEED;
+    }
+
+    // DRAG — tourne noyau + skygroup ensemble
+    renderer.domElement.addEventListener('mousedown',function(){isDragging=true;dragDist=0;});
+    window.addEventListener('mouseup',function(){isDragging=false;});
+    window.addEventListener('mousemove',function(e){
+        if(isDragging){
+            dragDist++;
+            mainGroup.rotation.y+=(e.clientX-prevMouse.x)*0.005;
+            mainGroup.rotation.x+=(e.clientY-prevMouse.y)*0.005;
+            skyGroup.rotation.y +=(e.clientX-prevMouse.x)*0.001;
+        }
+        prevMouse={x:e.clientX,y:e.clientY};
+        mouse.x=(e.clientX/window.innerWidth)*2-1;
+        mouse.y=-(e.clientY/window.innerHeight)*2+1;
+    });
+
+    // SCROLL = avancer
+    window.addEventListener('wheel',function(e){
+        var dir=new THREE.Vector3(); camera.getWorldDirection(dir);
+        camera.position.addScaledVector(dir,-e.deltaY*1.0);
+    },{passive:true});
+
+    // TOUCH
+    renderer.domElement.addEventListener('touchstart',function(e){
+        if(e.touches.length===2){initialPinch=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);}
+        else{isDragging=true;dragDist=0;prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};mouse.x=(e.touches[0].clientX/window.innerWidth)*2-1;mouse.y=-(e.touches[0].clientY/window.innerHeight)*2+1;}
+    },{passive:false});
+    window.addEventListener('touchend',function(){isDragging=false;initialPinch=null;});
+    window.addEventListener('touchmove',function(e){
+        if(e.touches.length===2&&initialPinch){
+            var d=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);
+            var dir=new THREE.Vector3();camera.getWorldDirection(dir);
+            camera.position.addScaledVector(dir,(initialPinch-d)*1.5);initialPinch=d;
+        }else if(isDragging&&e.touches.length===1){
+            dragDist++;
+            mainGroup.rotation.y+=(e.touches[0].clientX-prevMouse.x)*0.005;
+            mainGroup.rotation.x+=(e.touches[0].clientY-prevMouse.y)*0.005;
+            skyGroup.rotation.y +=(e.touches[0].clientX-prevMouse.x)*0.001;
+            prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
+        }
+        e.preventDefault();
+    },{passive:false});
+
+    // CLICK photo
+    renderer.domElement.addEventListener('click',function(e){
+        if(dragDist>4)return;
+        raycaster.setFromCamera(mouse,camera);
+        var hits=raycaster.intersectObjects(allMeshes);
+        if(hits.length>0){document.getElementById('zoom-img').src=hits[0].object.userData.hd;document.getElementById('preview-box').style.display='block';}
+    });
+    renderer.domElement.addEventListener('touchend',function(e){
+        if(dragDist<=3&&e.changedTouches.length>0){
+            var t=e.changedTouches[0];mouse.x=(t.clientX/window.innerWidth)*2-1;mouse.y=-(t.clientY/window.innerHeight)*2+1;
+            raycaster.setFromCamera(mouse,camera);
+            var hits=raycaster.intersectObjects(allMeshes);
+            if(hits.length>0){document.getElementById('zoom-img').src=hits[0].object.userData.hd;document.getElementById('preview-box').style.display='block';}
+        }
+    });
+
+    // BOUCLE
+    function animate(){
+        requestAnimationFrame(animate);
+        applyNav();
+        if(saturnObj) saturnObj.rotation.y+=0.0015;
+        if(!isDragging){
+            mainGroup.rotation.y+=0.0008;
+            skyGroup.rotation.y +=0.00006;
+        }
+        camera.lookAt(mainGroup.position.x,mainGroup.position.y,mainGroup.position.z);
+        renderer.render(scene,camera);
+    }
+    animate();
+}
+
+window.addEventListener('resize',function(){
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+init();
+</script>
 </body>
 </html>
