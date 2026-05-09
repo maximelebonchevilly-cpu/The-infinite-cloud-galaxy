@@ -2,245 +2,282 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>THE CORE 5000 - SATURN PROJECT (Deep Space Edition)</title>
+    <title>THE CORE 5000 - SATURN PROJECT</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background:#000; overflow:hidden; font-family:sans-serif; color:white; touch-action:none; cursor:crosshair; }
-        #info-btn { position:fixed; top:20px; right:20px; width:45px; height:45px; background:#00d4ff; border:2px solid white; border-radius:50%; color:black; font-size:22px; font-weight:bold; cursor:pointer; z-index:5000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px #00d4ff; }
-        #vip-counter { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg,#ff0055,#ffcc00); padding:8px 20px; border-radius:50px; font-weight:bold; z-index:1000; box-shadow:0 0 20px #ff0055; font-size:14px; white-space:nowrap; }
-        #info-modal { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:85%; max-width:400px; background:rgba(0,0,0,0.95); border:2px solid #00d4ff; padding:25px; border-radius:20px; z-index:7000; display:none; text-align:left; line-height:1.5; font-size:14px; }
-        #preview-box { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:85%; max-width:350px; background:rgba(0,0,0,0.98); border:2px solid #ffcc00; padding:20px; border-radius:20px; z-index:6000; display:none; text-align:center; }
-        #zoom-img { width:100%; height:auto; border-radius:10px; display:block; margin-bottom:15px; }
-        #ui { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:1000; width:100%; text-align:center; }
-        .pay-btn { background:#fff; color:#000; padding:15px 30px; border-radius:50px; font-size:18px; font-weight:900; cursor:pointer; border:none; box-shadow:0 0 30px #00d4ff; animation:pulse 2s infinite; }
-        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-        .close-btn { background:#00d4ff; color:black; border:none; padding:10px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:15px; }
-        #nav-hint { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); font-size:11px; color:rgba(255,255,255,0.4); z-index:1000; pointer-events:none; white-space:nowrap; letter-spacing:2px; }
-        #crosshair { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:16px; height:16px; pointer-events:none; z-index:500; opacity:0.3; }
-        #crosshair::before,#crosshair::after { content:''; position:absolute; background:white; }
-        #crosshair::before { width:1px; height:100%; left:50%; }
-        #crosshair::after  { height:1px; width:100%; top:50%; }
+
+        /* VIP counter — urgence et rareté */
+        #vip-counter {
+            position:fixed; top:20px; left:50%; transform:translateX(-50%);
+            background:linear-gradient(90deg,#ff0055,#ffcc00);
+            padding:8px 22px; border-radius:50px; font-weight:bold;
+            z-index:1000; font-size:14px; white-space:nowrap;
+            box-shadow:0 0 25px rgba(255,0,85,0.6);
+            animation:glowPill 2s ease-in-out infinite;
+        }
+        @keyframes glowPill {
+            0%,100%{box-shadow:0 0 20px rgba(255,0,85,0.5)}
+            50%{box-shadow:0 0 40px rgba(255,204,0,0.8)}
+        }
+
+        /* Info bouton discret */
+        #info-btn {
+            position:fixed; top:20px; right:20px; width:38px; height:38px;
+            background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.4);
+            border-radius:50%; color:#00d4ff; font-size:18px; font-weight:bold;
+            cursor:pointer; z-index:5000; display:flex; align-items:center; justify-content:center;
+        }
+
+        /* Modals */
+        #info-modal {
+            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:88%; max-width:420px; background:rgba(0,2,12,0.96);
+            border:1px solid rgba(0,212,255,0.3); padding:28px; border-radius:20px;
+            z-index:7000; display:none; line-height:1.7; font-size:13px;
+        }
+        #preview-box {
+            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:85%; max-width:350px; background:rgba(0,0,0,0.98);
+            border:2px solid #ffcc00; padding:20px; border-radius:20px;
+            z-index:6000; display:none; text-align:center;
+        }
+        #zoom-img { width:100%; border-radius:10px; display:block; margin-bottom:15px; }
+        .close-btn { background:#00d4ff; color:black; border:none; padding:10px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:12px; }
+
+        /* CTA principal */
+        #cta-wrap {
+            position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+            z-index:1000; text-align:center;
+        }
+        .pay-btn {
+            background:#fff; color:#000; padding:16px 38px; border-radius:50px;
+            font-size:18px; font-weight:900; cursor:pointer; border:none;
+            box-shadow:0 0 35px rgba(0,212,255,0.7), 0 0 80px rgba(0,212,255,0.25);
+            animation:ctaPulse 2.5s ease-in-out infinite; letter-spacing:0.5px;
+        }
+        @keyframes ctaPulse {
+            0%,100%{box-shadow:0 0 30px rgba(0,212,255,0.6),0 0 70px rgba(0,212,255,0.2)}
+            50%{box-shadow:0 0 55px rgba(0,212,255,0.95),0 0 120px rgba(0,212,255,0.4)}
+        }
+        .pay-sub {
+            font-size:11px; color:rgba(255,255,255,0.45); margin-top:8px;
+            letter-spacing:2px;
+        }
+
+        /* Hint navigation */
+        #nav-hint {
+            position:fixed; bottom:105px; left:50%; transform:translateX(-50%);
+            font-size:10px; color:rgba(255,255,255,0.18); z-index:1000;
+            pointer-events:none; letter-spacing:3px; white-space:nowrap;
+        }
+
+        /* Crosshair subtil */
+        #ch { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:400; opacity:0.18; }
+        #ch::before,#ch::after { content:''; position:absolute; background:white; }
+        #ch::before { width:1px; height:14px; left:50%; top:-7px; }
+        #ch::after  { height:1px; width:14px; top:50%; left:-7px; }
     </style>
 </head>
 <body>
 
+<div id="vip-counter">✦ NOYAU VIP : <span id="slots">3</span> / 5000 ✦</div>
 <div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
-<div id="vip-counter">NOYAU VIP : <span id="slots">3</span> / 5000</div>
-<div id="crosshair"></div>
+<div id="ch"></div>
 
 <div id="info-modal">
-    <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
-    <p><b>Concept :</b> 5000 places pour l'éternité dans le Saturn Project.</p>
-    <p><b>Inscription :</b> 1 euro - Ta photo dans le noyau cosmique.</p>
-    <p><b>Contrôles :</b> Souris = regarder. Scroll = avancer. WASD = voler. Q/E = haut/bas.</p>
+    <h2 style="color:#00d4ff;margin-bottom:16px;font-size:16px;letter-spacing:2px;">THE CORE 5000</h2>
+    <p><b style="color:white">Concept :</b> 5000 photos gravées pour l'éternité dans cet univers. Ta photo reste ici, visible par tous, pour toujours.</p>
+    <br>
+    <p><b style="color:white">Comment :</b> 1 euro → formulaire → ta photo rejoint le noyau.</p>
+    <br>
+    <p><b style="color:white">Navigation :</b> Drag = regarder autour · Scroll = avancer · WASD = voler · Q/E = haut/bas</p>
+    <br>
+    <p style="color:rgba(255,204,0,0.8);font-size:12px;">⚡ Seulement 5000 places. Jamais plus.</p>
     <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">FERMER</button>
 </div>
 
 <div id="preview-box">
     <img id="zoom-img" src="">
-    <p style="color:#ffcc00;margin:5px 0;font-weight:bold;">FOUNDING MEMBER</p>
-    <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%;background:white;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;">RETOUR</button>
+    <p style="color:#ffcc00;font-weight:bold;letter-spacing:2px;font-size:12px;margin-top:4px;">★ MEMBRE FONDATEUR ★</p>
+    <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%;background:white;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:14px;">RETOUR</button>
 </div>
 
-<div id="ui">
-    <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1 euro)</button>
+<div id="cta-wrap">
+    <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">
+        REJOINDRE LE NOYAU — 1€
+    </button>
+    <div class="pay-sub">Ta photo. Pour l'éternité.</div>
 </div>
-
-<div id="nav-hint">Drag = regarder | Scroll = avancer | WASD = voler</div>
+<div id="nav-hint">DRAG · SCROLL · WASD</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
 
-// --- INITIALISATION ---
 var scene    = new THREE.Scene();
-var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
+var camera   = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 0.1, 80000);
 var renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x000008);
 document.body.appendChild(renderer.domElement);
 
-var universeGroup = new THREE.Group();
-scene.add(universeGroup);
+camera.position.set(0, 120, 380);
+camera.rotation.order = 'YXZ';
+var camYaw = 0, camPitch = -0.15;
 
 var raycaster = new THREE.Raycaster();
 var mouse2d   = new THREE.Vector2();
 var allMeshes = [];
-var shootingStars = [];
+var isDragging=false, prevMouse={x:0,y:0}, dragDist=0;
+var initialPinch=null, keys={};
+var mesPhotos = ['Thefirst.jpg.jpg','Thesecond.jpg.jpg','Thethird.jpg.jpg'];
 
-// Paramètres Caméra
-var camYaw = 0, camPitch = -0.18;
-camera.position.set(0, 500, 1000);
-camera.rotation.order = 'YXZ';
+// ── Caméra FPS libre ─────────────────────────────────────────
+renderer.domElement.addEventListener('mousedown',function(e){isDragging=true;dragDist=0;prevMouse={x:e.clientX,y:e.clientY};});
+window.addEventListener('mouseup',function(){isDragging=false;});
+window.addEventListener('mousemove',function(e){
+    mouse2d.x=(e.clientX/window.innerWidth)*2-1;
+    mouse2d.y=-(e.clientY/window.innerHeight)*2+1;
+    if(isDragging){dragDist++;camYaw-=(e.clientX-prevMouse.x)*0.004;camPitch-=(e.clientY-prevMouse.y)*0.004;camPitch=Math.max(-1.5,Math.min(1.5,camPitch));prevMouse={x:e.clientX,y:e.clientY};}
+});
+window.addEventListener('wheel',function(e){var d=new THREE.Vector3();camera.getWorldDirection(d);camera.position.addScaledVector(d,-e.deltaY*1.2);},{passive:true});
+window.addEventListener('keydown',function(e){keys[e.code]=true;});
+window.addEventListener('keyup',function(e){keys[e.code]=false;});
+renderer.domElement.addEventListener('touchstart',function(e){if(e.touches.length===2){initialPinch=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);}else{isDragging=true;dragDist=0;prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}},{passive:false});
+window.addEventListener('touchend',function(){isDragging=false;initialPinch=null;});
+window.addEventListener('touchmove',function(e){if(e.touches.length===2&&initialPinch){var d=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);var dir=new THREE.Vector3();camera.getWorldDirection(dir);camera.position.addScaledVector(dir,(initialPinch-d)*2);initialPinch=d;}else if(isDragging&&e.touches.length===1){dragDist++;camYaw-=(e.touches[0].clientX-prevMouse.x)*0.004;camPitch-=(e.touches[0].clientY-prevMouse.y)*0.004;camPitch=Math.max(-1.5,Math.min(1.5,camPitch));prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}e.preventDefault();},{passive:false});
+renderer.domElement.addEventListener('click',function(){if(dragDist>4)return;raycaster.setFromCamera(mouse2d,camera);var h=raycaster.intersectObjects(allMeshes);if(h.length>0){document.getElementById('zoom-img').src=h[0].object.userData.hd;document.getElementById('preview-box').style.display='block';}});
 
-var isDragging = false, prevMouse = { x:0, y:0 }, dragDist = 0, keys = {};
+function applyNav(){var S=9,f=new THREE.Vector3();camera.getWorldDirection(f);var r=new THREE.Vector3().crossVectors(f,new THREE.Vector3(0,1,0)).normalize(),u=new THREE.Vector3(0,1,0);if(keys['KeyW']||keys['ArrowUp'])camera.position.addScaledVector(f,S);if(keys['KeyS']||keys['ArrowDown'])camera.position.addScaledVector(f,-S);if(keys['KeyA']||keys['ArrowLeft'])camera.position.addScaledVector(r,-S);if(keys['KeyD']||keys['ArrowRight'])camera.position.addScaledVector(r,S);if(keys['KeyQ'])camera.position.addScaledVector(u,S);if(keys['KeyE'])camera.position.addScaledVector(u,-S);}
 
-// --- GENERATEUR DE TEXTURES ---
-function mkCloudTexture() {
-    var sz = 256, c = document.createElement('canvas');
-    c.width = c.height = sz;
-    var ctx = c.getContext('2d'), h = sz / 2;
-    var grd = ctx.createRadialGradient(h, h, 0, h, h, h);
-    grd.addColorStop(0, 'rgba(255,255,255,0.25)');
-    grd.addColorStop(0.3, 'rgba(255,255,255,0.08)');
-    grd.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = grd; ctx.fillRect(0, 0, sz, sz);
-    return new THREE.CanvasTexture(c);
-}
-var cloudTex = mkCloudTexture();
+// ── Helpers ──────────────────────────────────────────────────
+function mkSp(r,g,b,s){s=s||0.09;var sz=128,c=document.createElement('canvas');c.width=c.height=sz;var ctx=c.getContext('2d'),h=sz/2,grd=ctx.createRadialGradient(h,h,0,h,h,h);grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');grd.addColorStop(s,'rgba('+r+','+g+','+b+',0.7)');grd.addColorStop(s*4,'rgba('+r+','+g+','+b+',0.18)');grd.addColorStop(0.65,'rgba('+r+','+g+','+b+',0.03)');grd.addColorStop(1,'rgba('+r+','+g+','+b+',0)');ctx.fillStyle=grd;ctx.fillRect(0,0,sz,sz);return new THREE.CanvasTexture(c);}
 
-function mkSp(r,g,b,s) {
-    var sz=128,c=document.createElement('canvas');
-    c.width=c.height=sz;
-    var ctx=c.getContext('2d'),h=sz/2;
-    var grd=ctx.createRadialGradient(h,h,0,h,h,h);
-    grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');
-    grd.addColorStop(s||0.1,'rgba('+r+','+g+','+b+',0)');
-    ctx.fillStyle=grd; ctx.fillRect(0,0,sz,sz);
-    return new THREE.CanvasTexture(c);
-}
+function addPts(v,col,sz,op,sp,bl){if(!v||!v.length)return;var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));var m=new THREE.PointsMaterial({color:col,size:sz,transparent:true,opacity:op,sizeAttenuation:true,depthWrite:false,blending:bl!==undefined?bl:THREE.AdditiveBlending});if(sp)m.map=sp;scene.add(new THREE.Points(g,m));}
 
-// --- CONSTRUCTION DE L'UNIVERS ---
+// ════════════════════════════════════════════════════════
+//  UNIVERS — étoiles + voie lactée + quelques nébuleuses
+//  Simple, beau, met en valeur le noyau
+// ════════════════════════════════════════════════════════
 function buildUniverse() {
-    // 1. Étoiles de fond
-    var s1 = [];
-    for (var i=0; i<20000; i++) {
-        var r = 15000 + Math.random()*50000;
-        var th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
-        s1.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph));
-    }
-    addPts(s1, 0xffffff, 1.5, 0.8, null);
+    // Étoiles proches (immersion)
+    var s1=[];for(var i=0;i<6000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=300+Math.random()*2000;s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+    addPts(s1,0xffffff,1.5,0.92,null);
 
-    // 2. Nébuleuses Volumétriques (Style Deep Blue & Purple)
-    var nebSpecs = [
-        { pos: [5000, 0, -8000], col: 0x0055ff, size: 6000, density: 350 }, // Bleu
-        { pos: [-6000, 1000, -4000], col: 0xaa00ff, size: 5000, density: 300 }, // Violet
-        { pos: [0, -2000, -12000], col: 0x00ccff, size: 8000, density: 400 }, // Cyan
-        { pos: [8000, 2000, 2000], col: 0xff0066, size: 5500, density: 250 }  // Rose
+    // Étoiles moyennes distances
+    var s2=[];for(var i=0;i<25000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=2000+Math.random()*15000;s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+    addPts(s2,0xffffff,1.0,0.85,null);
+
+    // Étoiles lointaines bleutées
+    var s3=[];for(var i=0;i<12000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=15000+Math.random()*35000;s3.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+    addPts(s3,0xc0d4ff,0.75,0.40,null);
+
+    // Étoiles dorées
+    var s4=[];for(var i=0;i<5000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=5000+Math.random()*20000;s4.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+    addPts(s4,0xffd080,0.8,0.25,null);
+
+    // Étoiles héros brillantes
+    var sh=[];for(var i=0;i<150;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=800+Math.random()*10000;sh.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+    addPts(sh,0xffffff,13,0.88,mkSp(255,255,255,0.05));
+
+    // Voie Lactée — bande dense qui traverse l'espace
+    var ml=[];for(var i=0;i<35000;i++){var th=Math.random()*Math.PI*2,r=4000+Math.random()*28000,y=(Math.random()-0.5)*(600+r*0.035);ml.push(Math.cos(th)*r,y,Math.sin(th)*r);}
+    addPts(ml,0xeef4ff,0.55,0.32,null);
+
+    // 6 nébuleuses lointaines — subtiles, couleurs désaturées
+    // Pas en plein dans la tronche, juste dans le fond
+    var nebs=[
+        {p:[6000,300,-9000],  c:[145,135,175],s:4000,n:900},
+        {p:[-8500,-200,5000], c:[175,150,130],s:4500,n:850},
+        {p:[3000,800,-13000], c:[125,155,170],s:5000,n:800},
+        {p:[-10000,200,-3000],c:[170,148,125],s:4200,n:820},
+        {p:[2000,-600,11000], c:[142,162,182],s:4800,n:780},
+        {p:[-4000,700,-11000],c:[168,152,135],s:3800,n:750}
     ];
-
-    nebSpecs.forEach(spec => {
-        var group = new THREE.Group();
-        group.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
-        for (var i=0; i<spec.density; i++) {
-            var mat = new THREE.SpriteMaterial({
-                map: cloudTex, color: spec.col, transparent: true,
-                opacity: 0.1 + Math.random()*0.2, blending: THREE.AdditiveBlending, depthWrite: false
-            });
-            var m = new THREE.Sprite(mat);
-            var r = Math.random() * spec.size;
-            var a = Math.random()*Math.PI*2, b = Math.random()*Math.PI*2;
-            m.position.set(Math.cos(a)*Math.sin(b)*r, Math.sin(a)*Math.sin(b)*(r*0.5), Math.cos(b)*r);
-            var sc = 2000 + Math.random()*3500;
-            m.scale.set(sc, sc, 1);
-            group.add(m);
-        }
-        universeGroup.add(group);
-        var light = new THREE.PointLight(spec.col, 2.5, spec.size*2.5);
-        light.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
-        scene.add(light);
+    nebs.forEach(function(def){
+        var R=def.c[0],G=def.c[1],B=def.c[2];
+        var col=new THREE.Color(R/255,G/255,B/255);
+        var sp1=mkSp(R,G,B,0.08);
+        // Halo large transparent
+        var hv=[];for(var i=0;i<def.n;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*2.0;hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.30,def.p[2]+r*Math.cos(ph));}
+        addPts(hv,col,def.s*3.5,0.006,sp1);
+        // Corps
+        var mv=[];for(var i=0;i<Math.floor(def.n*0.5);i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s;mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.38,def.p[2]+r*Math.cos(ph));}
+        addPts(mv,col,def.s*1.4,0.018,sp1);
+        // Étoiles dans la nébuleuse
+        var ev=[];for(var i=0;i<60;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.random()*def.s*0.6;ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4,def.p[2]+r*Math.cos(ph));}
+        addPts(ev,0xffffff,1.6,0.70,null);
     });
 
-    // 3. Le Noyau (Core) - Vos photos ici
-    var photos = ['Thefirst.jpg.jpg', 'Thesecond.jpg.jpg', 'Thethird.jpg.jpg'];
-    photos.forEach((url, i) => {
-        var tex = new THREE.TextureLoader().load(url);
-        var geo = new THREE.PlaneGeometry(120, 120);
-        var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
-        var mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set((i-1)*300, 150, 0);
-        mesh.userData.hd = url;
-        scene.add(mesh);
-        allMeshes.push(mesh);
-    });
-}
-
-function addPts(verts, color, size, opacity, sprite) {
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
-    var mat = new THREE.PointsMaterial({ color:color, size:size, transparent:true, opacity:opacity, sizeAttenuation:true, depthWrite:false, blending: THREE.AdditiveBlending });
-    if (sprite) mat.map=sprite;
-    universeGroup.add(new THREE.Points(geo,mat));
-}
-
-function spawnShootingStar() {
-    var th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1), r = 5000 + Math.random()*10000;
-    var x = r*Math.sin(ph)*Math.cos(th), y = r*Math.sin(ph)*Math.sin(th), z = r*Math.cos(ph);
-    var dx=Math.random()-0.5, dy=(Math.random()-0.5)*0.3, dz=Math.random()-0.5;
-    var pts = [new THREE.Vector3(0,0,0), new THREE.Vector3(dx*200, dy*200, dz*200)];
-    var geo = new THREE.BufferGeometry().setFromPoints(pts);
-    var mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.8 });
-    var line = new THREE.Line(geo, mat);
-    line.position.set(x,y,z);
-    universeGroup.add(line);
-    shootingStars.push({ mesh: line, speed: 50+Math.random()*100, life: 1.0 });
-}
-
-// --- CONTROLES ---
-window.addEventListener('mousedown', e => { isDragging=true; dragDist=0; prevMouse={x:e.clientX, y:e.clientY}; });
-window.addEventListener('mouseup', () => isDragging=false);
-window.addEventListener('mousemove', e => {
-    mouse2d.x = (e.clientX/window.innerWidth)*2-1;
-    mouse2d.y = -(e.clientY/window.innerHeight)*2+1;
-    if(isDragging){
-        dragDist++;
-        camYaw -= (e.clientX-prevMouse.x)*0.003;
-        camPitch -= (e.clientY-prevMouse.y)*0.003;
-        camPitch = Math.max(-1.5, Math.min(1.5, camPitch));
-        prevMouse={x:e.clientX, y:e.clientY};
+    // Étoiles filantes dans le fond
+    for(var i=0;i<25;i++){
+        var x=(Math.random()-0.5)*30000,y=(Math.random()-0.5)*15000,z=(Math.random()-0.5)*30000;
+        var len=150+Math.random()*400,dx=Math.random()-0.5,dy=(Math.random()-0.5)*0.2,dz=Math.random()-0.5;
+        var dn=Math.sqrt(dx*dx+dy*dy+dz*dz);dx/=dn;dy/=dn;dz/=dn;
+        var geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,y,z),new THREE.Vector3(x+dx*len,y+dy*len,z+dz*len)]);
+        scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.12+Math.random()*0.30,depthWrite:false})));
     }
-});
-window.addEventListener('wheel', e => {
-    var dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-    camera.position.addScaledVector(dir, -e.deltaY * 2);
-}, {passive:true});
-window.addEventListener('keydown', e => keys[e.code]=true);
-window.addEventListener('keyup', e => keys[e.code]=false);
-
-function updateNav() {
-    var s = 15, fwd = new THREE.Vector3(); camera.getWorldDirection(fwd);
-    var rt = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
-    if(keys['KeyW']) camera.position.addScaledVector(fwd, s);
-    if(keys['KeyS']) camera.position.addScaledVector(fwd, -s);
-    if(keys['KeyA']) camera.position.addScaledVector(rt, -s);
-    if(keys['KeyD']) camera.position.addScaledVector(rt, s);
-    if(keys['KeyQ']) camera.position.y += s;
-    if(keys['KeyE']) camera.position.y -= s;
-    camera.rotation.y = camYaw; camera.rotation.x = camPitch;
 }
 
-// --- BOUCLE D'ANIMATION ---
-function animate() {
-    requestAnimationFrame(animate);
-    updateNav();
-    
-    // Rotation lente de l'univers
-    universeGroup.rotation.y += 0.0002;
-    
-    // Update shooting stars
-    shootingStars.forEach((s, i) => {
-        s.mesh.position.addScaledVector(new THREE.Vector3(1,0.2,1), s.speed*0.1);
-        s.life -= 0.01;
-        s.mesh.material.opacity = s.life;
-        if(s.life <= 0) {
-            universeGroup.remove(s.mesh);
-            shootingStars.splice(i, 1);
-            spawnShootingStar();
+// ════════════════════════════════════════════════════════
+//  NOYAU — code original intact
+//  + lueur centrale pour le rendre encore plus impressionnant
+// ════════════════════════════════════════════════════════
+var noyauGroup = new THREE.Group();
+scene.add(noyauGroup);
+
+function buildNoyau() {
+    // Lueur centrale — donne l'impression d'un noyau vivant
+    var spGlow = mkSp(180,220,255,0.04);
+    var gv=[];for(var i=0;i<3000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*90;gv.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th)*0.7,r*Math.cos(ph));}
+    var gGeo=new THREE.BufferGeometry();gGeo.setAttribute('position',new THREE.Float32BufferAttribute(gv,3));
+    noyauGroup.add(new THREE.Points(gGeo,new THREE.PointsMaterial({color:0xaaddff,size:60,transparent:true,opacity:0.025,map:spGlow,sizeAttenuation:true,depthWrite:false,blending:THREE.AdditiveBlending})));
+
+    // Photos — code original intact
+    var loader = new THREE.TextureLoader();
+    var maxA   = renderer.capabilities.getMaxAnisotropy();
+    for (var i=0;i<600;i++) {
+        var size,url,isVIP;
+        if(i<150){size=24;isVIP=true;url=(i<mesPhotos.length)?mesPhotos[i]:'https://picsum.photos/id/'+(i+100)+'/500/500';}
+        else{size=14;isVIP=false;url='https://picsum.photos/id/'+(i+100)+'/200/200';}
+        var tex=loader.load(url);
+        tex.anisotropy=maxA;tex.minFilter=THREE.LinearFilter;
+        var mat=new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,transparent:!isVIP,opacity:isVIP?1:0.7});
+        var plane=new THREE.Mesh(new THREE.PlaneGeometry(size,size),mat);
+        if(isVIP){
+            var dist=Math.random()*120,t=Math.random()*Math.PI*2,p=Math.random()*Math.PI;
+            plane.position.set(dist*Math.sin(p)*Math.cos(t),dist*Math.sin(p)*Math.sin(t),dist*Math.cos(p));
+            plane.lookAt(0,0,0);
+        }else{
+            var angle=Math.random()*Math.PI*2,radius=200+Math.random()*350;
+            plane.position.x=Math.cos(angle)*radius;plane.position.z=Math.sin(angle)*radius;
+            plane.position.y=(Math.random()-0.5)*40;plane.lookAt(0,plane.position.y,0);
         }
-    });
-
-    renderer.render(scene, camera);
+        plane.userData={hd:url};
+        noyauGroup.add(plane);allMeshes.push(plane);
+    }
 }
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
+// ════════════════════════════════════════════════════════
+//  START
+// ════════════════════════════════════════════════════════
+scene.add(new THREE.AmbientLight(0x111122, 1.5));
 buildUniverse();
+buildNoyau();
+
+function animate(){
+    requestAnimationFrame(animate);
+    applyNav();
+    camera.rotation.y=camYaw;
+    camera.rotation.x=camPitch;
+    noyauGroup.rotation.y+=0.0008;
+    renderer.render(scene,camera);
+}
 animate();
 
+window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
 </script>
 </body>
 </html>
