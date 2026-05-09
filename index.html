@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -346,4 +347,179 @@ function updateShootingStars() {
         s.y += s.dy * s.speed;
         s.z += s.dz * s.speed;
 
-        // Mettre a jour la geometri
+        // Mettre a jour la geometrie
+        var positions = s.geo.attributes.position.array;
+        positions[0] = s.x;
+        positions[1] = s.y;
+        positions[2] = s.z;
+        positions[3] = s.x + s.dx*s.len;
+        positions[4] = s.y + s.dy*s.len;
+        positions[5] = s.z + s.dz*s.len;
+        s.geo.attributes.position.needsUpdate = true;
+        s.mat.opacity = Math.max(0, s.life) * 0.9;
+
+        if (s.life <= 0) {
+            universeGroup.remove(s.line);
+            shootingStars.splice(i, 1);
+        }
+    }
+    // Spawn aleatoire : environ 1 etoile filante toutes les 3 secondes
+    if (Math.random() < 0.006) spawnShootingStar();
+}
+
+// ════════════════════════════════════════════════════════
+//  NOYAU — VIP sphere dense (inchange) +
+//  photos non-VIP en 2 BRAS SPIRAUX autour du noyau
+// ════════════════════════════════════════════════════════
+var noyauGroup = new THREE.Group();
+scene.add(noyauGroup);
+
+function buildNoyau() {
+    var loader = new THREE.TextureLoader();
+    var maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    for (var i=0;i<600;i++) {
+        var size, textureURL, isVIP;
+
+        if (i<150) {
+            // ── VIP : sphere dense au centre — code original inchange ──
+            size=24; isVIP=true;
+            textureURL=(i<mesPhotos.length)?mesPhotos[i]:'https://picsum.photos/id/'+(i+100)+'/500/500';
+        } else {
+            size=14; isVIP=false;
+            textureURL='https://picsum.photos/id/'+(i+100)+'/200/200';
+        }
+
+        var texture=loader.load(textureURL);
+        texture.anisotropy=maxAnisotropy;
+        texture.minFilter=THREE.LinearFilter;
+
+        var mat=new THREE.MeshBasicMaterial({
+            map:texture, side:THREE.DoubleSide,
+            transparent:!isVIP, opacity:isVIP?1:0.75
+        });
+        var plane=new THREE.Mesh(new THREE.PlaneGeometry(size,size),mat);
+
+        if (isVIP) {
+            // Sphere dense — code original inchange
+            var dist=Math.random()*120;
+            var t=Math.random()*Math.PI*2;
+            var p=Math.random()*Math.PI;
+            plane.position.set(
+                dist*Math.sin(p)*Math.cos(t),
+                dist*Math.sin(p)*Math.sin(t),
+                dist*Math.cos(p)
+            );
+            plane.lookAt(0,0,0);
+
+        } else {
+            // ── ANNEAUX CONCENTRIQUES autour du noyau ─────────
+            // 450 photos en 6 anneaux de 75 photos chacun
+            // style anneaux de Saturne mais avec des photos
+            var idx       = i - 150;
+            var ringIndex = Math.floor(idx / 75);
+            if (ringIndex > 5) ringIndex = 5;
+            var posInRing = idx % 75;
+
+            // Rayon de chaque anneau — espaces regulierement
+            var radii = [195, 275, 355, 438, 522, 620];
+            var radius = radii[ringIndex];
+
+            // Angle uniformement reparti + micro-variation pour eviter l effet grille
+            var angle = (posInRing / 75.0) * Math.PI * 2 + (Math.random()-0.5)*0.06;
+
+            // Chaque anneau a une inclinaison differente — donne un vrai relief 3D
+            var tilts = [0.0, 0.10, -0.07, 0.13, -0.09, 0.05];
+            var tilt  = tilts[ringIndex];
+
+            var x = Math.cos(angle) * radius;
+            var z = Math.sin(angle) * radius;
+            // Y = inclinaison de l anneau + petit bruit
+            var y = Math.sin(angle) * radius * Math.tan(tilt) + (Math.random()-0.5)*6;
+
+            plane.position.set(x, y, z);
+            plane.lookAt(0, 0, 0);
+        }
+
+        plane.userData={hd:textureURL};
+        noyauGroup.add(plane);
+        allMeshes.push(plane);
+    }
+}
+
+// ════════════════════════════════════════════════════════
+//  SATURNE — placee loin, tu peux voler jusqu'a elle
+// ════════════════════════════════════════════════════════
+function buildSaturn() {
+    var grp = new THREE.Group();
+    var cvs=document.createElement('canvas'); cvs.width=512; cvs.height=256;
+    var ctx=cvs.getContext('2d');
+    var bg=ctx.createLinearGradient(0,0,0,256);
+    bg.addColorStop(0,'#4a3820');bg.addColorStop(0.15,'#a87840');bg.addColorStop(0.30,'#c49840');bg.addColorStop(0.50,'#d8a840');bg.addColorStop(0.70,'#c49840');bg.addColorStop(0.85,'#a87840');bg.addColorStop(1,'#4a3820');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,512,256);
+    [[0.06,0.04,0.4],[0.18,0.06,0.3],[0.34,0.08,0.35],[0.50,0.06,0.28],[0.66,0.08,0.35],[0.80,0.06,0.3],[0.90,0.04,0.4]].forEach(function(b){
+        var g2=ctx.createLinearGradient(0,b[0]*256,0,(b[0]+b[1])*256);
+        g2.addColorStop(0,'rgba(40,22,2,0)');g2.addColorStop(0.5,'rgba(40,22,2,'+b[2]+')');g2.addColorStop(1,'rgba(40,22,2,0)');
+        ctx.fillStyle=g2; ctx.fillRect(0,b[0]*256,512,b[1]*256);
+    });
+    var sphere=new THREE.Mesh(new THREE.SphereGeometry(80,64,64),new THREE.MeshPhongMaterial({map:new THREE.CanvasTexture(cvs),shininess:5}));
+    grp.add(sphere);
+    var rc=document.createElement('canvas'); rc.width=256; rc.height=4;
+    var rctx=rc.getContext('2d');
+    var rg=rctx.createLinearGradient(0,0,256,0);
+    rg.addColorStop(0,'rgba(180,150,70,0)');rg.addColorStop(0.06,'rgba(200,170,85,0.45)');rg.addColorStop(0.20,'rgba(225,195,105,0.82)');rg.addColorStop(0.35,'rgba(240,210,120,0.88)');rg.addColorStop(0.45,'rgba(200,175,90,0.68)');rg.addColorStop(0.50,'rgba(90,70,30,0.15)');rg.addColorStop(0.55,'rgba(200,175,90,0.68)');rg.addColorStop(0.70,'rgba(225,195,105,0.82)');rg.addColorStop(0.84,'rgba(195,165,80,0.55)');rg.addColorStop(0.94,'rgba(165,138,62,0.28)');rg.addColorStop(1,'rgba(140,115,50,0)');
+    rctx.fillStyle=rg; rctx.fillRect(0,0,256,4);
+    var rTex=new THREE.CanvasTexture(rc);
+    [[98,112,0.28],[115,162,0.88],[165,198,0.68],[202,212,0.22]].forEach(function(rd){
+        var rGeo=new THREE.RingGeometry(rd[0],rd[1],128,1);
+        var uv=rGeo.attributes.uv,pos=rGeo.attributes.position,v3=new THREE.Vector3();
+        for(var j=0;j<pos.count;j++){v3.fromBufferAttribute(pos,j);uv.setXY(j,(v3.length()-rd[0])/(rd[1]-rd[0]),0.5);}
+        var rm=new THREE.Mesh(rGeo,new THREE.MeshBasicMaterial({map:rTex,side:THREE.DoubleSide,transparent:true,opacity:rd[2],depthWrite:false}));
+        rm.rotation.x=Math.PI*0.43; grp.add(rm);
+    });
+    grp.add(new THREE.Mesh(new THREE.SphereGeometry(88,32,32),new THREE.MeshBasicMaterial({color:0xc89040,transparent:true,opacity:0.05,side:THREE.BackSide,depthWrite:false})));
+    var sun=new THREE.DirectionalLight(0xfff5e0,1.8); sun.position.set(600,300,400); scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x14142a,2.2));
+    grp.position.set(-2800, 200, -1500);
+    grp.rotation.z=0.06;
+    scene.add(grp);
+    return sphere;
+}
+
+// ════════════════════════════════════════════════════════
+//  START
+// ════════════════════════════════════════════════════════
+buildUniverse();
+var saturnSphere = buildSaturn();
+buildNoyau();
+
+function animate() {
+    requestAnimationFrame(animate);
+    applyNav();
+    applyCameraRotation();
+
+    // Noyau tourne sur lui-meme
+    noyauGroup.rotation.y += 0.0008;
+
+    // Saturne tourne
+    if (saturnSphere) saturnSphere.rotation.y += 0.0012;
+
+    // Univers de fond tourne tres lentement (sensation de mouvement cosmique)
+    universeGroup.rotation.y += 0.00008;
+    universeGroup.rotation.x += 0.000025;
+
+    // Etoiles filantes animees
+    updateShootingStars();
+
+    renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', function() {
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>
