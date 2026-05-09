@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +14,7 @@
         .pay-btn { background:#fff; color:#000; padding:15px 30px; border-radius:50px; font-size:18px; font-weight:900; cursor:pointer; border:none; box-shadow:0 0 30px #00d4ff; animation:pulse 2s infinite; }
         @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
         .close-btn { background:#00d4ff; color:black; border:none; padding:10px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:15px; }
-        #nav-hint { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); font-size:11px; color:rgba(255,255,255,0.3); z-index:1000; pointer-events:none; white-space:nowrap; letter-spacing:2px; }
+        #nav-hint { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); font-size:11px; color:rgba(255,255,255,0.22); z-index:1000; pointer-events:none; white-space:nowrap; letter-spacing:2px; }
         #crosshair { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:16px; height:16px; pointer-events:none; z-index:500; opacity:0.3; }
         #crosshair::before,#crosshair::after { content:''; position:absolute; background:white; }
         #crosshair::before { width:1px; height:100%; left:50%; }
@@ -30,8 +29,9 @@
 
 <div id="info-modal">
     <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
-    <p><b>Concept :</b> 5000 places pour l'eternite.</p>
-    <p><b>Controles :</b> ZSQD = voler. Drag = regarder. Scroll = avancer.</p>
+    <p><b>Concept :</b> 5000 places pour l'eternite dans le Saturn Project.</p>
+    <p><b>Inscription :</b> Paiement 1 euro - Formulaire - Ta photo dans le noyau.</p>
+    <p><b>Controles :</b> Drag souris = regarder autour. Scroll = avancer. WASD = voler. Q/E = haut/bas.</p>
     <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">FERMER</button>
 </div>
 <div id="preview-box">
@@ -42,18 +42,18 @@
 <div id="ui">
     <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">JOIN THE CORE (1 euro)</button>
 </div>
-<div id="nav-hint">ZSQD : Voler | Souris : Regarder | Scroll : Vitesse</div>
+<div id="nav-hint">Drag = regarder | Scroll = avancer | WASD = voler | Q/E = haut/bas</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
 
 var scene    = new THREE.Scene();
-var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
+var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 80000);
 var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x000000);
+renderer.setClearColor(0x00000a);
 document.body.appendChild(renderer.domElement);
 
 var raycaster = new THREE.Raycaster();
@@ -61,16 +61,23 @@ var mouse2d   = new THREE.Vector2();
 var allMeshes = [];
 var mesPhotos = ['Thefirst.jpg.jpg','Thesecond.jpg.jpg','Thethird.jpg.jpg'];
 
+// Groupe pour tout l'univers de fond — tourne lentement
 var universeGroup = new THREE.Group();
 scene.add(universeGroup);
 
+// Etoiles filantes animees
 var shootingStars = [];
+
 var camYaw   = 0;
 var camPitch = -0.18;
 camera.position.set(0, 150, 420);
 camera.rotation.order = 'YXZ';
 
-var isDragging = false, prevMouse = { x:0, y:0 }, dragDist = 0, keys = {};
+var isDragging   = false;
+var prevMouse    = { x:0, y:0 };
+var initialPinch = null;
+var dragDist     = 0;
+var keys         = {};
 
 function applyCameraRotation() {
     camera.rotation.y = camYaw;
@@ -83,7 +90,7 @@ renderer.domElement.addEventListener('mousedown', function(e) {
 });
 window.addEventListener('mouseup', function() { isDragging = false; });
 window.addEventListener('mousemove', function(e) {
-    mouse2d.x = (e.clientX/window.innerWidth)*2-1;
+    mouse2d.x =  (e.clientX/window.innerWidth)*2-1;
     mouse2d.y = -(e.clientY/window.innerHeight)*2+1;
     if (isDragging) {
         dragDist++;
@@ -96,127 +103,48 @@ window.addEventListener('mousemove', function(e) {
 window.addEventListener('wheel', function(e) {
     var dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
-    camera.position.addScaledVector(dir, -e.deltaY * 1.5);
+    camera.position.addScaledVector(dir, -e.deltaY * 1.2);
 }, { passive:true });
 window.addEventListener('keydown', function(e) { keys[e.code]=true; });
-window.addEventListener('keyup', function(e) { keys[e.code]=false; });
+window.addEventListener('keyup',   function(e) { keys[e.code]=false; });
 
 function applyNav() {
-    var SPEED = 12;
-    var fwd = new THREE.Vector3(); camera.getWorldDirection(fwd);
-    var rt = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
-    if (keys['KeyW']) camera.position.addScaledVector(fwd, SPEED);
-    if (keys['KeyS']) camera.position.addScaledVector(fwd, -SPEED);
-    if (keys['KeyA']) camera.position.addScaledVector(rt, -SPEED);
-    if (keys['KeyD']) camera.position.addScaledVector(rt, SPEED);
-    if (keys['KeyQ']) camera.position.y += SPEED;
-    if (keys['KeyE']) camera.position.y -= SPEED;
+    var SPEED = 9;
+    var fwd   = new THREE.Vector3(); camera.getWorldDirection(fwd);
+    var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
+    var up    = new THREE.Vector3(0,1,0);
+    if (keys['KeyW']||keys['ArrowUp'])    camera.position.addScaledVector(fwd,    SPEED);
+    if (keys['KeyS']||keys['ArrowDown'])  camera.position.addScaledVector(fwd,   -SPEED);
+    if (keys['KeyA']||keys['ArrowLeft'])  camera.position.addScaledVector(right,  -SPEED);
+    if (keys['KeyD']||keys['ArrowRight']) camera.position.addScaledVector(right,   SPEED);
+    if (keys['KeyQ']) camera.position.addScaledVector(up,  SPEED);
+    if (keys['KeyE']) camera.position.addScaledVector(up, -SPEED);
 }
 
-function mkSp(r,g,b,s) {
-    var sz=128,c=document.createElement('canvas');
-    c.width=c.height=sz;
-    var ctx=c.getContext('2d'),h=sz/2;
-    var grd=ctx.createRadialGradient(h,h,0,h,h,h);
-    grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');
-    grd.addColorStop(s||0.1,'rgba('+r+','+g+','+b+',0.7)');
-    grd.addColorStop(0.6,'rgba('+r+','+g+','+b+',0.1)');
-    grd.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grd; ctx.fillRect(0,0,sz,sz);
-    return new THREE.CanvasTexture(c);
-}
-
-function addPts(verts, color, size, opacity, sprite, blend) {
-    if (!verts||verts.length===0) return;
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
-    var mat = new THREE.PointsMaterial({
-        color:color, size:size, transparent:true, opacity:opacity,
-        sizeAttenuation:true, depthWrite:false, blending: blend || THREE.AdditiveBlending
-    });
-    if (sprite) mat.map=sprite;
-    universeGroup.add(new THREE.Points(geo,mat));
-}
-
-function buildUniverse() {
-    // --- 1. NÉBULEUSES RÉELLES (LE FOND) ---
-    var nebSpecs = [
-        {c:[0, 200, 255], n:5000, r:6000, sz:6000},  // Cyan dense
-        {c:[200, 0, 255], n:4000, r:12000, sz:8000}, // Violet profond
-        {c:[255, 30, 100], n:3000, r:18000, sz:10000} // Rouge galactique
-    ];
-    nebSpecs.forEach(spec => {
-        var v = [];
-        var sp = mkSp(spec.c[0], spec.c[1], spec.c[2], 0.1);
-        for(var i=0; i<spec.n; i++){
-            var r = spec.r * (0.3 + 0.7 * Math.random());
-            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
-            v.push(r * Math.sin(ph) * Math.cos(th), r * Math.sin(ph) * Math.sin(th) * 0.5, r * Math.cos(ph));
-        }
-        addPts(v, 0xffffff, spec.sz, 0.15, sp);
-    });
-
-    // --- 2. REPRISE CODE ORIGINAL ---
-    var s1=[]; for (var i=0;i<8000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=200+Math.random()*1500; s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
-    addPts(s1, 0xffffff, 1.5, 0.95, null);
-    var s2=[]; for (var i=0;i<20000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=1500+Math.random()*8000; s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
-    addPts(s2, 0xffffff, 1.1, 0.88, null);
-    var ml=[]; for (var i=0;i<30000;i++) { var th=Math.random()*Math.PI*2,r=3000+Math.random()*25000,y=(Math.random()-0.5)*(800+r*0.04); ml.push(Math.cos(th)*r,y,Math.sin(th)*r); }
-    addPts(ml, 0xeef4ff, 0.6, 0.35, null);
-
-    // Photos Membres
-    mesPhotos.forEach(function(url, i) {
-        var tex = new THREE.TextureLoader().load(url);
-        var mesh = new THREE.Mesh(new THREE.PlaneGeometry(130, 130), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
-        mesh.position.set((i - 1) * 300, 150, 0);
-        mesh.userData.hd = url;
-        scene.add(mesh);
-        allMeshes.push(mesh);
-    });
-
-    for (var i=0;i<10;i++) spawnShootingStar();
-}
-
-function spawnShootingStar() {
-    var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=5000+Math.random()*15000;
-    var x=r*Math.sin(ph)*Math.cos(th), y=r*Math.sin(ph)*Math.sin(th), z=r*Math.cos(ph);
-    var dx=Math.random()-0.5, dy=(Math.random()-0.5)*0.4, dz=Math.random()-0.5;
-    var dn=Math.sqrt(dx*dx+dy*dy+dz*dz); dx/=dn; dy/=dn; dz/=dn;
-    var len=250, speed=100, life=1.0, decay=0.01;
-    var pts=[new THREE.Vector3(x,y,z), new THREE.Vector3(x+dx*len, y+dy*len, z+dz*len)];
-    var geo=new THREE.BufferGeometry().setFromPoints(pts);
-    var mat=new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.8});
-    var line=new THREE.Line(geo, mat);
-    universeGroup.add(line);
-    shootingStars.push({line:line, geo:geo, x:x, y:y, z:z, dx:dx, dy:dy, dz:dz, len:len, speed:speed, life:life, decay:decay, mat:mat});
-}
-
-function updateShootingStars() {
-    for (var i=shootingStars.length-1; i>=0; i--) {
-        var s=shootingStars[i]; s.life-=s.decay; s.x+=s.dx*s.speed; s.y+=s.dy*s.speed; s.z+=s.dz*s.speed;
-        var p=s.geo.attributes.position.array;
-        p[0]=s.x; p[1]=s.y; p[2]=s.z; p[3]=s.x+s.dx*s.len; p[4]=s.y+s.dy*s.len; p[5]=s.z+s.dz*s.len;
-        s.geo.attributes.position.needsUpdate=true; s.mat.opacity=s.life;
-        if (s.life<=0) { universeGroup.remove(s.line); shootingStars.splice(i,1); spawnShootingStar(); }
+renderer.domElement.addEventListener('touchstart', function(e) {
+    if (e.touches.length===2) {
+        initialPinch = Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY);
+    } else {
+        isDragging=true; dragDist=0;
+        prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
     }
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    applyNav();
-    applyCameraRotation();
-    updateShootingStars();
-    universeGroup.rotation.y += 0.0002;
-    renderer.render(scene, camera);
-}
-
-buildUniverse();
-animate();
-
-window.addEventListener('resize', function() {
-    camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+},{passive:false});
+window.addEventListener('touchend', function() { isDragging=false; initialPinch=null; });
+window.addEventListener('touchmove', function(e) {
+    if (e.touches.length===2 && initialPinch) {
+        var d   = Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);
+        var dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+        camera.position.addScaledVector(dir, (initialPinch-d)*2);
+        initialPinch=d;
+    } else if (isDragging && e.touches.length===1) {
+        dragDist++;
+        camYaw   -= (e.touches[0].clientX-prevMouse.x)*0.004;
+        camPitch -= (e.touches[0].clientY-prevMouse.y)*0.004;
+        camPitch  = Math.max(-1.5, Math.min(1.5, camPitch));
+        prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    }
+    e.preventDefault();
+},{passive:false});
 
 renderer.domElement.addEventListener('click', function(e) {
     if (dragDist>4) return;
@@ -227,6 +155,195 @@ renderer.domElement.addEventListener('click', function(e) {
         document.getElementById('preview-box').style.display='block';
     }
 });
-</script>
-</body>
-</html>
+
+// ── Sprite ────────────────────────────────────────────────────
+function mkSp(r,g,b,s) {
+    s=s||0.09;
+    var sz=128,c=document.createElement('canvas');
+    c.width=c.height=sz;
+    var ctx=c.getContext('2d'),h=sz/2;
+    var grd=ctx.createRadialGradient(h,h,0,h,h,h);
+    grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');
+    grd.addColorStop(s,'rgba('+r+','+g+','+b+',0.7)');
+    grd.addColorStop(s*4,'rgba('+r+','+g+','+b+',0.18)');
+    grd.addColorStop(0.65,'rgba('+r+','+g+','+b+',0.03)');
+    grd.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,sz,sz);
+    return new THREE.CanvasTexture(c);
+}
+
+function addPts(verts, color, size, opacity, sprite, blend) {
+    if (!verts||verts.length===0) return;
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
+    var mat = new THREE.PointsMaterial({
+        color:color, size:size, transparent:true, opacity:opacity,
+        sizeAttenuation:true, depthWrite:false,
+        blending: blend!==undefined ? blend : THREE.AdditiveBlending
+    });
+    if (sprite) mat.map=sprite;
+    universeGroup.add(new THREE.Points(geo,mat));
+}
+
+// ════════════════════════════════════════════════════════
+//  UNIVERS — code original intact
+// ════════════════════════════════════════════════════════
+function buildUniverse() {
+    var s1=[];
+    for (var i=0;i<8000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=200+Math.random()*1500; s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s1, 0xffffff, 1.5, 0.95, null);
+
+    var s2=[];
+    for (var i=0;i<20000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=1500+Math.random()*8000; s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s2, 0xffffff, 1.1, 0.88, null);
+
+    var s3=[];
+    for (var i=0;i<15000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=8000+Math.random()*20000; s3.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s3, 0xc8dcff, 0.8, 0.50, null);
+
+    var s4=[];
+    for (var i=0;i<8000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=18000+Math.random()*30000; s4.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s4, 0xffd090, 0.7, 0.30, null);
+
+    var sh=[], spStar=mkSp(255,255,255,0.05);
+    for (var i=0;i<200;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=500+Math.random()*12000; sh.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(sh, 0xffffff, 12, 0.90, spStar);
+
+    var ml=[];
+    for (var i=0;i<30000;i++) { var th=Math.random()*Math.PI*2,r=3000+Math.random()*25000,y=(Math.random()-0.5)*(800+r*0.04); ml.push(Math.cos(th)*r,y,Math.sin(th)*r); }
+    addPts(ml, 0xeef4ff, 0.6, 0.35, null);
+
+    var nebDefs = [
+        { p:[5000, 200,-7500],  c:[155,145,185], s:3500, n:1400, sz:320 },
+        { p:[-7000,-300,4500],  c:[185,160,135], s:3200, n:1200, sz:290 },
+        { p:[2500, 900,-11000], c:[130,160,180], s:4000, n:1300, sz:350 },
+        { p:[-9000,100,-2500],  c:[175,155,130], s:3600, n:1100, sz:310 },
+        { p:[1200,-700,10000],  c:[150,170,190], s:3800, n:1200, sz:335 },
+        { p:[-4000,600,-9500],  c:[180,160,140], s:3000, n:1000, sz:275 },
+        { p:[9500,-200,2500],   c:[140,160,180], s:4200, n:1100, sz:360 },
+        { p:[-6000,-500,8000],  c:[170,150,130], s:3400, n:1050, sz:300 },
+        { p:[3500, 1100,-5000], c:[160,175,200], s:2800, n:900,  sz:260 },
+        { p:[-2500,-900,12000], c:[190,165,145], s:4500, n:1300, sz:380 },
+        { p:[11000, 300,-4000], c:[135,155,175], s:4000, n:1000, sz:345 },
+        { p:[-10000,400, 6000], c:[175,150,125], s:3700, n:1100, sz:315 }
+    ];
+    nebDefs.forEach(function(def) {
+        var R=def.c[0],G=def.c[1],B=def.c[2];
+        var col=new THREE.Color(R/255,G/255,B/255);
+        var colC=new THREE.Color(Math.min(R+35,255)/255,Math.min(G+35,255)/255,Math.min(B+35,255)/255);
+        var sp1=mkSp(R,G,B,0.08);
+        var sp2=mkSp(Math.min(R+40,255),Math.min(G+40,255),Math.min(B+40,255),0.06);
+        var hv=[];
+        for (var i=0;i<def.n;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*1.9; hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.32,def.p[2]+r*Math.cos(ph)); }
+        addPts(hv, col, def.sz*3.2, 0.007, sp1);
+        var mv=[];
+        for (var i=0;i<Math.floor(def.n*0.6);i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s; mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.38,def.p[2]+r*Math.cos(ph)); }
+        addPts(mv, col, def.sz*1.3, 0.020, sp1);
+        var cv=[];
+        for (var i=0;i<Math.floor(def.n*0.20);i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*0.30; cv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.45,def.p[2]+r*Math.cos(ph)); }
+        addPts(cv, colC, def.sz*0.42, 0.048, sp2);
+        var ev=[];
+        for (var i=0;i<100;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.random()*def.s*0.7; ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4,def.p[2]+r*Math.cos(ph)); }
+        addPts(ev, 0xffffff, 1.8, 0.75, null);
+    });
+
+    var spCl=mkSp(255,248,220,0.06);
+    var cls=[[4000,300,-4500],[-5000,200,3200],[2500,-700,5800],[-2000,900,-6000],[6500,-100,1800],[-3500,-600,-3500],[4500,700,4000],[-6000,200,-2000],[1200,-1000,5200],[-3000,800,4800],[4200,-500,-3800],[-5500,400,800],[7200,100,-2200],[-3200,1100,6800],[600,-1300,-6200],[8000,-300,4000],[-7000,-400,-5000],[2800,1200,-8000]];
+    cls.forEach(function(p) {
+        var sp=55+Math.random()*80,cv=[],cb=[];
+        for (var i=0;i<650;i++){var r=Math.cbrt(Math.random())*sp,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);cv.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        for (var i=0;i<110;i++){var r=Math.cbrt(Math.random())*sp*0.3,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);cb.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        addPts(cv, 0xfff5e0, 4.8, 0.55, spCl);
+        addPts(cb, 0xffffff, 2.2, 0.92, null);
+    });
+
+    var asteroidFields = [
+        { c:[3000,100,1500],   type:'spiral', arms:2, rMax:320, n:3500 },
+        { c:[-4000,-200,3000], type:'cloud',  spread:280, n:2800 },
+        { c:[5500,400,-3000],  type:'ring',   rMin:90, rMax:180, n:2500 },
+        { c:[-2000,600,-5500], type:'trail',  len:900, n:2200 },
+        { c:[1500,-800,7000],  type:'spiral', arms:1, rMax:250, n:2800 },
+        { c:[-6000,200,1000],  type:'ring',   rMin:70, rMax:150, n:2000 },
+        { c:[2200,-400,-7000], type:'cloud',  spread:320, n:2500 },
+        { c:[-3500,-300,6500], type:'spiral', arms:2, rMax:280, n:3000 },
+        { c:[7000,500,-1500],  type:'ring',   rMin:110, rMax:200, n:2200 },
+        { c:[-1000,800,-8000], type:'trail',  len:700, n:1800 },
+        { c:[8500,-200,3500],  type:'cloud',  spread:260, n:2000 },
+        { c:[-7500,300,-3000], type:'spiral', arms:1, rMax:300, n:2600 }
+    ];
+    asteroidFields.forEach(function(f) {
+        var av=[],abv=[];
+        if (f.type==='spiral') {
+            for (var arm=0;arm<f.arms;arm++) { var ao=(arm/f.arms)*Math.PI*2; for (var i=0;i<Math.floor(f.n/f.arms);i++){var t=i/Math.floor(f.n/f.arms),angle=ao+t*Math.PI*4+(Math.random()-0.5)*0.5,r=25+t*f.rMax+(Math.random()-0.5)*35;av.push(f.c[0]+Math.cos(angle)*r,(Math.random()-0.5)*20,f.c[2]+Math.sin(angle)*r);} }
+            for (var i=0;i<40;i++){var a=Math.random()*Math.PI*2,r=20+Math.random()*f.rMax*0.7;abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*12,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='cloud') {
+            for (var i=0;i<f.n;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*f.spread;av.push(f.c[0]+r*Math.sin(ph)*Math.cos(th)*1.7,f.c[1]+r*Math.sin(ph)*Math.sin(th)*0.4,f.c[2]+r*Math.cos(ph)*1.4);}
+            for (var i=0;i<45;i++){var a=Math.random()*Math.PI*2,r=Math.random()*f.spread*0.7;abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*30,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='ring') {
+            for (var i=0;i<f.n;i++){var a=Math.random()*Math.PI*2,u=Math.random()+Math.random(),r=f.rMin+(u<1?u:2-u)*(f.rMax-f.rMin);av.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*15+Math.cos(a)*r*Math.tan(0.4)*0.2,f.c[2]+Math.sin(a)*r);}
+            for (var i=0;i<35;i++){var a=Math.random()*Math.PI*2,r=f.rMin+Math.random()*(f.rMax-f.rMin);abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*8,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='trail') {
+            for (var i=0;i<f.n;i++){var t=(i/f.n)-0.5,x=t*f.len+(Math.random()-0.5)*100;av.push(f.c[0]+x,f.c[1]+(Math.random()-0.5)*55+Math.abs(x)*0.04,f.c[2]+(Math.random()-0.5)*100);}
+        }
+        addPts(av, 0xb0a090, 0.9, 0.52, null, THREE.NormalBlending);
+        if (abv.length>0) addPts(abv, 0xddd0be, 3.8, 0.72, null, THREE.NormalBlending);
+        addPts([f.c[0],f.c[1],f.c[2]], 0xfff8e0, 18, 0.85, mkSp(255,248,220,0.05));
+    });
+
+    // Les etoiles filantes sont generees dynamiquement dans animate()
+    // On en spawn quelques-unes au depart
+    for (var i=0;i<8;i++) spawnShootingStar();
+}
+
+// ════════════════════════════════════════════════════════
+//  ETOILES FILANTES ANIMEES
+// ════════════════════════════════════════════════════════
+function spawnShootingStar() {
+    // Point de depart aleatoire dans une grande sphere
+    var th  = Math.random()*Math.PI*2;
+    var ph  = Math.acos(2*Math.random()-1);
+    var r   = 4000 + Math.random()*12000;
+    var x   = r*Math.sin(ph)*Math.cos(th);
+    var y   = r*Math.sin(ph)*Math.sin(th);
+    var z   = r*Math.cos(ph);
+
+    // Direction aleatoire
+    var dx=Math.random()-0.5, dy=(Math.random()-0.5)*0.4, dz=Math.random()-0.5;
+    var dn=Math.sqrt(dx*dx+dy*dy+dz*dz); dx/=dn; dy/=dn; dz/=dn;
+
+    var len   = 180 + Math.random()*320;
+    var speed = 60  + Math.random()*120;  // unites par frame (rapide)
+    var life  = 1.0;
+    var decay = 0.008 + Math.random()*0.012; // vitesse de disparition
+
+    var pts = [
+        new THREE.Vector3(x, y, z),
+        new THREE.Vector3(x + dx*len, y + dy*len, z + dz*len)
+    ];
+    var geo  = new THREE.BufferGeometry().setFromPoints(pts);
+    var mat  = new THREE.LineBasicMaterial({
+        color: 0xffffff, transparent: true,
+        opacity: 0.7 + Math.random()*0.3, depthWrite: false
+    });
+    var line = new THREE.Line(geo, mat);
+    universeGroup.add(line);
+
+    shootingStars.push({
+        line: line, geo: geo,
+        x:x, y:y, z:z,
+        dx:dx, dy:dy, dz:dz,
+        len:len, speed:speed,
+        life:life, decay:decay,
+        mat:mat
+    });
+}
+
+function updateShootingStars() {
+    for (var i = shootingStars.length-1; i >= 0; i--) {
+        var s = shootingStars[i];
+        s.life -= s.decay;
+        s.x += s.dx * s.speed;
+        s.y += s.dy * s.speed;
+        s.z += s.dz * s.speed;
+
+        // Mettre a jour la geometri
