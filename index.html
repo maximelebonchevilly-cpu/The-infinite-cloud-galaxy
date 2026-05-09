@@ -1,283 +1,531 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>THE CORE 5000 - SATURN PROJECT</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#000; overflow:hidden; font-family:sans-serif; color:white; touch-action:none; cursor:crosshair; }
-
-        /* VIP counter — urgence et rareté */
-        #vip-counter {
-            position:fixed; top:20px; left:50%; transform:translateX(-50%);
-            background:linear-gradient(90deg,#ff0055,#ffcc00);
-            padding:8px 22px; border-radius:50px; font-weight:bold;
-            z-index:1000; font-size:14px; white-space:nowrap;
-            box-shadow:0 0 25px rgba(255,0,85,0.6);
-            animation:glowPill 2s ease-in-out infinite;
-        }
-        @keyframes glowPill {
-            0%,100%{box-shadow:0 0 20px rgba(255,0,85,0.5)}
-            50%{box-shadow:0 0 40px rgba(255,204,0,0.8)}
-        }
-
-        /* Info bouton discret */
-        #info-btn {
-            position:fixed; top:20px; right:20px; width:38px; height:38px;
-            background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.4);
-            border-radius:50%; color:#00d4ff; font-size:18px; font-weight:bold;
-            cursor:pointer; z-index:5000; display:flex; align-items:center; justify-content:center;
-        }
-
-        /* Modals */
-        #info-modal {
-            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-            width:88%; max-width:420px; background:rgba(0,2,12,0.96);
-            border:1px solid rgba(0,212,255,0.3); padding:28px; border-radius:20px;
-            z-index:7000; display:none; line-height:1.7; font-size:13px;
-        }
-        #preview-box {
-            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-            width:85%; max-width:350px; background:rgba(0,0,0,0.98);
-            border:2px solid #ffcc00; padding:20px; border-radius:20px;
-            z-index:6000; display:none; text-align:center;
-        }
-        #zoom-img { width:100%; border-radius:10px; display:block; margin-bottom:15px; }
-        .close-btn { background:#00d4ff; color:black; border:none; padding:10px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:12px; }
-
-        /* CTA principal */
-        #cta-wrap {
-            position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
-            z-index:1000; text-align:center;
-        }
-        .pay-btn {
-            background:#fff; color:#000; padding:16px 38px; border-radius:50px;
-            font-size:18px; font-weight:900; cursor:pointer; border:none;
-            box-shadow:0 0 35px rgba(0,212,255,0.7), 0 0 80px rgba(0,212,255,0.25);
-            animation:ctaPulse 2.5s ease-in-out infinite; letter-spacing:0.5px;
-        }
-        @keyframes ctaPulse {
-            0%,100%{box-shadow:0 0 30px rgba(0,212,255,0.6),0 0 70px rgba(0,212,255,0.2)}
-            50%{box-shadow:0 0 55px rgba(0,212,255,0.95),0 0 120px rgba(0,212,255,0.4)}
-        }
-        .pay-sub {
-            font-size:11px; color:rgba(255,255,255,0.45); margin-top:8px;
-            letter-spacing:2px;
-        }
-
-        /* Hint navigation */
-        #nav-hint {
-            position:fixed; bottom:105px; left:50%; transform:translateX(-50%);
-            font-size:10px; color:rgba(255,255,255,0.18); z-index:1000;
-            pointer-events:none; letter-spacing:3px; white-space:nowrap;
-        }
-
-        /* Crosshair subtil */
-        #ch { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:400; opacity:0.18; }
-        #ch::before,#ch::after { content:''; position:absolute; background:white; }
-        #ch::before { width:1px; height:14px; left:50%; top:-7px; }
-        #ch::after  { height:1px; width:14px; top:50%; left:-7px; }
-    </style>
-</head>
-<body>
-
-<div id="vip-counter">✦ NOYAU VIP : <span id="slots">3</span> / 5000 ✦</div>
-<div id="info-btn" onclick="document.getElementById('info-modal').style.display='block'">i</div>
-<div id="ch"></div>
-
-<div id="info-modal">
-    <h2 style="color:#00d4ff;margin-bottom:16px;font-size:16px;letter-spacing:2px;">THE CORE 5000</h2>
-    <p><b style="color:white">Concept :</b> 5000 photos gravées pour l'éternité dans cet univers. Ta photo reste ici, visible par tous, pour toujours.</p>
-    <br>
-    <p><b style="color:white">Comment :</b> 1 euro → formulaire → ta photo rejoint le noyau.</p>
-    <br>
-    <p><b style="color:white">Navigation :</b> Drag = regarder autour · Scroll = avancer · WASD = voler · Q/E = haut/bas</p>
-    <br>
-    <p style="color:rgba(255,204,0,0.8);font-size:12px;">⚡ Seulement 5000 places. Jamais plus.</p>
-    <button class="close-btn" onclick="document.getElementById('info-modal').style.display='none'">FERMER</button>
-</div>
-
-<div id="preview-box">
-    <img id="zoom-img" src="">
-    <p style="color:#ffcc00;font-weight:bold;letter-spacing:2px;font-size:12px;margin-top:4px;">★ MEMBRE FONDATEUR ★</p>
-    <button onclick="document.getElementById('preview-box').style.display='none'" style="width:100%;background:white;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:14px;">RETOUR</button>
-</div>
-
-<div id="cta-wrap">
-    <button class="pay-btn" onclick="window.open('https://buy.stripe.com/00w14pdy60pj1Of2cm3VC00')">
-        REJOINDRE LE NOYAU — 1€
-    </button>
-    <div class="pay-sub">Ta photo. Pour l'éternité.</div>
-</div>
-<div id="nav-hint">DRAG · SCROLL · WASD</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
 
+// ─── SCENE ────────────────────────────────────────────────────
 var scene    = new THREE.Scene();
-var camera   = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 0.1, 80000);
-var renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x000008);
-document.body.appendChild(renderer.domElement);
-
-camera.position.set(0, 120, 380);
-camera.rotation.order = 'YXZ';
-var camYaw = 0, camPitch = -0.15;
-
-var raycaster = new THREE.Raycaster();
-var mouse2d   = new THREE.Vector2();
+var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 80000);
+var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+@@ -63,10 +62,15 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
 var allMeshes = [];
-var isDragging=false, prevMouse={x:0,y:0}, dragDist=0;
-var initialPinch=null, keys={};
 var mesPhotos = ['Thefirst.jpg.jpg','Thesecond.jpg.jpg','Thethird.jpg.jpg'];
 
-// ── Caméra FPS libre ─────────────────────────────────────────
-renderer.domElement.addEventListener('mousedown',function(e){isDragging=true;dragDist=0;prevMouse={x:e.clientX,y:e.clientY};});
-window.addEventListener('mouseup',function(){isDragging=false;});
-window.addEventListener('mousemove',function(e){
-    mouse2d.x=(e.clientX/window.innerWidth)*2-1;
-    mouse2d.y=-(e.clientY/window.innerHeight)*2+1;
-    if(isDragging){dragDist++;camYaw-=(e.clientX-prevMouse.x)*0.004;camPitch-=(e.clientY-prevMouse.y)*0.004;camPitch=Math.max(-1.5,Math.min(1.5,camPitch));prevMouse={x:e.clientX,y:e.clientY};}
-});
-window.addEventListener('wheel',function(e){var d=new THREE.Vector3();camera.getWorldDirection(d);camera.position.addScaledVector(d,-e.deltaY*1.2);},{passive:true});
-window.addEventListener('keydown',function(e){keys[e.code]=true;});
-window.addEventListener('keyup',function(e){keys[e.code]=false;});
-renderer.domElement.addEventListener('touchstart',function(e){if(e.touches.length===2){initialPinch=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);}else{isDragging=true;dragDist=0;prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}},{passive:false});
-window.addEventListener('touchend',function(){isDragging=false;initialPinch=null;});
-window.addEventListener('touchmove',function(e){if(e.touches.length===2&&initialPinch){var d=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY);var dir=new THREE.Vector3();camera.getWorldDirection(dir);camera.position.addScaledVector(dir,(initialPinch-d)*2);initialPinch=d;}else if(isDragging&&e.touches.length===1){dragDist++;camYaw-=(e.touches[0].clientX-prevMouse.x)*0.004;camPitch-=(e.touches[0].clientY-prevMouse.y)*0.004;camPitch=Math.max(-1.5,Math.min(1.5,camPitch));prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}e.preventDefault();},{passive:false});
-renderer.domElement.addEventListener('click',function(){if(dragDist>4)return;raycaster.setFromCamera(mouse2d,camera);var h=raycaster.intersectObjects(allMeshes);if(h.length>0){document.getElementById('zoom-img').src=h[0].object.userData.hd;document.getElementById('preview-box').style.display='block';}});
+// ─── CAMERA FPS — rotation libre, pas de lookAt ────────────────
+// La camera tourne sur elle-meme, tu regardes partout
+var camYaw   = 0;       // rotation horizontale
+var camPitch = -0.18;   // legere inclinaison vers le bas au depart
+// Groupe pour tout l'univers de fond — tourne lentement
+var universeGroup = new THREE.Group();
+scene.add(universeGroup);
 
-function applyNav(){var S=9,f=new THREE.Vector3();camera.getWorldDirection(f);var r=new THREE.Vector3().crossVectors(f,new THREE.Vector3(0,1,0)).normalize(),u=new THREE.Vector3(0,1,0);if(keys['KeyW']||keys['ArrowUp'])camera.position.addScaledVector(f,S);if(keys['KeyS']||keys['ArrowDown'])camera.position.addScaledVector(f,-S);if(keys['KeyA']||keys['ArrowLeft'])camera.position.addScaledVector(r,-S);if(keys['KeyD']||keys['ArrowRight'])camera.position.addScaledVector(r,S);if(keys['KeyQ'])camera.position.addScaledVector(u,S);if(keys['KeyE'])camera.position.addScaledVector(u,-S);}
+// Etoiles filantes animees
+var shootingStars = [];
 
-// ── Helpers ──────────────────────────────────────────────────
-function mkSp(r,g,b,s){s=s||0.09;var sz=128,c=document.createElement('canvas');c.width=c.height=sz;var ctx=c.getContext('2d'),h=sz/2,grd=ctx.createRadialGradient(h,h,0,h,h,h);grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');grd.addColorStop(s,'rgba('+r+','+g+','+b+',0.7)');grd.addColorStop(s*4,'rgba('+r+','+g+','+b+',0.18)');grd.addColorStop(0.65,'rgba('+r+','+g+','+b+',0.03)');grd.addColorStop(1,'rgba('+r+','+g+','+b+',0)');ctx.fillStyle=grd;ctx.fillRect(0,0,sz,sz);return new THREE.CanvasTexture(c);}
+var camYaw   = 0;
+var camPitch = -0.18;
+camera.position.set(0, 150, 420);
+camera.rotation.order = 'YXZ';
 
-function addPts(v,col,sz,op,sp,bl){if(!v||!v.length)return;var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));var m=new THREE.PointsMaterial({color:col,size:sz,transparent:true,opacity:op,sizeAttenuation:true,depthWrite:false,blending:bl!==undefined?bl:THREE.AdditiveBlending});if(sp)m.map=sp;scene.add(new THREE.Points(g,m));}
-
-// ════════════════════════════════════════════════════════
-//  UNIVERS — étoiles + voie lactée + quelques nébuleuses
-//  Simple, beau, met en valeur le noyau
-// ════════════════════════════════════════════════════════
-function buildUniverse() {
-    // Étoiles proches (immersion)
-    var s1=[];for(var i=0;i<6000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=300+Math.random()*2000;s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
-    addPts(s1,0xffffff,1.5,0.92,null);
-
-    // Étoiles moyennes distances
-    var s2=[];for(var i=0;i<25000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=2000+Math.random()*15000;s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
-    addPts(s2,0xffffff,1.0,0.85,null);
-
-    // Étoiles lointaines bleutées
-    var s3=[];for(var i=0;i<12000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=15000+Math.random()*35000;s3.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
-    addPts(s3,0xc0d4ff,0.75,0.40,null);
-
-    // Étoiles dorées
-    var s4=[];for(var i=0;i<5000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=5000+Math.random()*20000;s4.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
-    addPts(s4,0xffd080,0.8,0.25,null);
-
-    // Étoiles héros brillantes
-    var sh=[];for(var i=0;i<150;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=800+Math.random()*10000;sh.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
-    addPts(sh,0xffffff,13,0.88,mkSp(255,255,255,0.05));
-
-    // Voie Lactée — bande dense qui traverse l'espace
-    var ml=[];for(var i=0;i<35000;i++){var th=Math.random()*Math.PI*2,r=4000+Math.random()*28000,y=(Math.random()-0.5)*(600+r*0.035);ml.push(Math.cos(th)*r,y,Math.sin(th)*r);}
-    addPts(ml,0xeef4ff,0.55,0.32,null);
-
-    // 6 nébuleuses lointaines — subtiles, couleurs désaturées
-    // Pas en plein dans la tronche, juste dans le fond
-    var nebs=[
-        {p:[6000,300,-9000],  c:[145,135,175],s:4000,n:900},
-        {p:[-8500,-200,5000], c:[175,150,130],s:4500,n:850},
-        {p:[3000,800,-13000], c:[125,155,170],s:5000,n:800},
-        {p:[-10000,200,-3000],c:[170,148,125],s:4200,n:820},
-        {p:[2000,-600,11000], c:[142,162,182],s:4800,n:780},
-        {p:[-4000,700,-11000],c:[168,152,135],s:3800,n:750}
-    ];
-    nebs.forEach(function(def){
-        var R=def.c[0],G=def.c[1],B=def.c[2];
-        var col=new THREE.Color(R/255,G/255,B/255);
-        var sp1=mkSp(R,G,B,0.08);
-        // Halo large transparent
-        var hv=[];for(var i=0;i<def.n;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*2.0;hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.30,def.p[2]+r*Math.cos(ph));}
-        addPts(hv,col,def.s*3.5,0.006,sp1);
-        // Corps
-        var mv=[];for(var i=0;i<Math.floor(def.n*0.5);i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s;mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.38,def.p[2]+r*Math.cos(ph));}
-        addPts(mv,col,def.s*1.4,0.018,sp1);
-        // Étoiles dans la nébuleuse
-        var ev=[];for(var i=0;i<60;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.random()*def.s*0.6;ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4,def.p[2]+r*Math.cos(ph));}
-        addPts(ev,0xffffff,1.6,0.70,null);
-    });
-
-    // Étoiles filantes dans le fond
-    for(var i=0;i<25;i++){
-        var x=(Math.random()-0.5)*30000,y=(Math.random()-0.5)*15000,z=(Math.random()-0.5)*30000;
-        var len=150+Math.random()*400,dx=Math.random()-0.5,dy=(Math.random()-0.5)*0.2,dz=Math.random()-0.5;
-        var dn=Math.sqrt(dx*dx+dy*dy+dz*dz);dx/=dn;dy/=dn;dz/=dn;
-        var geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,y,z),new THREE.Vector3(x+dx*len,y+dy*len,z+dz*len)]);
-        scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.12+Math.random()*0.30,depthWrite:false})));
+@@ -97,15 +101,11 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+        prevMouse = { x:e.clientX, y:e.clientY };
     }
+});
+
+// Scroll = avancer dans la direction du regard
+window.addEventListener('wheel', function(e) {
+    var dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    camera.position.addScaledVector(dir, -e.deltaY * 1.2);
+}, { passive:true });
+
+// Clavier
+window.addEventListener('keydown', function(e) { keys[e.code]=true; });
+window.addEventListener('keyup',   function(e) { keys[e.code]=false; });
+
+@@ -122,7 +122,6 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+    if (keys['KeyE']) camera.position.addScaledVector(up, -SPEED);
+}
+
+// Touch
+renderer.domElement.addEventListener('touchstart', function(e) {
+    if (e.touches.length===2) {
+        initialPinch = Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY);
+@@ -148,7 +147,6 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+    e.preventDefault();
+},{passive:false});
+
+// Click photo
+renderer.domElement.addEventListener('click', function(e) {
+    if (dragDist>4) return;
+    raycaster.setFromCamera(mouse2d, camera);
+@@ -159,7 +157,7 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+    }
+});
+
+// ─── SPRITE ──────────────────────────────────────────────────
+// ── Sprite ────────────────────────────────────────────────────
+function mkSp(r,g,b,s) {
+    s=s||0.09;
+    var sz=128,c=document.createElement('canvas');
+@@ -185,73 +183,38 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+        blending: blend!==undefined ? blend : THREE.AdditiveBlending
+    });
+    if (sprite) mat.map=sprite;
+    scene.add(new THREE.Points(geo,mat));
+    universeGroup.add(new THREE.Points(geo,mat));
 }
 
 // ════════════════════════════════════════════════════════
-//  NOYAU — code original intact
-//  + lueur centrale pour le rendre encore plus impressionnant
+//  UNIVERS INFINI — tout distribue en sphere autour de toi
+//  Tu peux voler dans toutes les directions, il y a
+//  toujours quelque chose a voir.
+//  UNIVERS — code original intact
+// ════════════════════════════════════════════════════════
+function buildUniverse() {
+
+    // ── ETOILES : 4 couches de distance ─────────────────
+    // Couche 1 : tres proches (sensation d'etre immerse)
+    var s1=[];
+    for (var i=0;i<8000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=200+Math.random()*1500;
+        s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+    }
+    for (var i=0;i<8000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=200+Math.random()*1500; s1.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s1, 0xffffff, 1.5, 0.95, null);
+
+    // Couche 2 : moyennes distances
+    var s2=[];
+    for (var i=0;i<20000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=1500+Math.random()*8000;
+        s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+    }
+    for (var i=0;i<20000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=1500+Math.random()*8000; s2.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s2, 0xffffff, 1.1, 0.88, null);
+
+    // Couche 3 : lointaines bleutees
+    var s3=[];
+    for (var i=0;i<15000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=8000+Math.random()*20000;
+        s3.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+    }
+    for (var i=0;i<15000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=8000+Math.random()*20000; s3.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s3, 0xc8dcff, 0.8, 0.50, null);
+
+    // Couche 4 : tres lointaines dorees
+    var s4=[];
+    for (var i=0;i<8000;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=18000+Math.random()*30000;
+        s4.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+    }
+    for (var i=0;i<8000;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=18000+Math.random()*30000; s4.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(s4, 0xffd090, 0.7, 0.30, null);
+
+    // Etoiles hero (brillantes avec sprite)
+    var sh=[], spStar=mkSp(255,255,255,0.05);
+    for (var i=0;i<200;i++) {
+        var th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=500+Math.random()*12000;
+        sh.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+    }
+    for (var i=0;i<200;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=500+Math.random()*12000; sh.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph)); }
+    addPts(sh, 0xffffff, 12, 0.90, spStar);
+
+    // ── VOIE LACTEE : bande d'etoiles dense ─────────────
+    // Donne du relief au fond — visible dans toutes directions
+    var ml=[];
+    for (var i=0;i<30000;i++) {
+        // Distribution en disque aplati (plan galactique)
+        var th  = Math.random()*Math.PI*2;
+        var r   = 3000+Math.random()*25000;
+        var y   = (Math.random()-0.5)*(800+r*0.04);
+        ml.push(Math.cos(th)*r, y, Math.sin(th)*r);
+    }
+    for (var i=0;i<30000;i++) { var th=Math.random()*Math.PI*2,r=3000+Math.random()*25000,y=(Math.random()-0.5)*(800+r*0.04); ml.push(Math.cos(th)*r,y,Math.sin(th)*r); }
+    addPts(ml, 0xeef4ff, 0.6, 0.35, null);
+
+    // ── NUAGES DE GAZ — vraies couleurs espaciales ────────
+    // Distribues en sphere autour du noyau — partout
+    var nebDefs = [
+        // [x,y,z], [R,G,B], spread, nPart, pSize
+        { p:[5000, 200,-7500],  c:[155,145,185], s:3500, n:1400, sz:320 },
+        { p:[-7000,-300,4500],  c:[185,160,135], s:3200, n:1200, sz:290 },
+        { p:[2500, 900,-11000], c:[130,160,180], s:4000, n:1300, sz:350 },
+@@ -265,69 +228,36 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+        { p:[11000, 300,-4000], c:[135,155,175], s:4000, n:1000, sz:345 },
+        { p:[-10000,400, 6000], c:[175,150,125], s:3700, n:1100, sz:315 }
+    ];
+
+    nebDefs.forEach(function(def) {
+        var R=def.c[0],G=def.c[1],B=def.c[2];
+        var col = new THREE.Color(R/255,G/255,B/255);
+        var colC= new THREE.Color(Math.min(R+35,255)/255,Math.min(G+35,255)/255,Math.min(B+35,255)/255);
+        var sp1 = mkSp(R,G,B,0.08);
+        var sp2 = mkSp(Math.min(R+40,255),Math.min(G+40,255),Math.min(B+40,255),0.06);
+
+        // Halo enorme tres transparent
+        var col=new THREE.Color(R/255,G/255,B/255);
+        var colC=new THREE.Color(Math.min(R+35,255)/255,Math.min(G+35,255)/255,Math.min(B+35,255)/255);
+        var sp1=mkSp(R,G,B,0.08);
+        var sp2=mkSp(Math.min(R+40,255),Math.min(G+40,255),Math.min(B+40,255),0.06);
+        var hv=[];
+        for (var i=0;i<def.n;i++) {
+            var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.s*1.9;
+            hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.32,def.p[2]+r*Math.cos(ph));
+        }
+        for (var i=0;i<def.n;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*1.9; hv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.32,def.p[2]+r*Math.cos(ph)); }
+        addPts(hv, col, def.sz*3.2, 0.007, sp1);
+
+        // Corps
+        var mv=[];
+        for (var i=0;i<Math.floor(def.n*0.6);i++) {
+            var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.s;
+            mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.38,def.p[2]+r*Math.cos(ph));
+        }
+        for (var i=0;i<Math.floor(def.n*0.6);i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s; mv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.38,def.p[2]+r*Math.cos(ph)); }
+        addPts(mv, col, def.sz*1.3, 0.020, sp1);
+
+        // Coeur
+        var cv=[];
+        for (var i=0;i<Math.floor(def.n*0.20);i++) {
+            var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+            var r=Math.cbrt(Math.random())*def.s*0.30;
+            cv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.45,def.p[2]+r*Math.cos(ph));
+        }
+        for (var i=0;i<Math.floor(def.n*0.20);i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*def.s*0.30; cv.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.45,def.p[2]+r*Math.cos(ph)); }
+        addPts(cv, colC, def.sz*0.42, 0.048, sp2);
+
+        // Etoiles dans la nebuleuse
+        var ev=[];
+        for (var i=0;i<100;i++) {
+            var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.random()*def.s*0.7;
+            ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4,def.p[2]+r*Math.cos(ph));
+        }
+        for (var i=0;i<100;i++) { var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.random()*def.s*0.7; ev.push(def.p[0]+r*Math.sin(ph)*Math.cos(th),def.p[1]+r*Math.sin(ph)*Math.sin(th)*0.4,def.p[2]+r*Math.cos(ph)); }
+        addPts(ev, 0xffffff, 1.8, 0.75, null);
+    });
+
+    // ── AMAS GLOBULAIRES ─────────────────────────────────
+    var spCl=mkSp(255,248,220,0.06);
+    var cls=[
+        [4000,300,-4500],[-5000,200,3200],[2500,-700,5800],[-2000,900,-6000],
+        [6500,-100,1800],[-3500,-600,-3500],[4500,700,4000],[-6000,200,-2000],
+        [1200,-1000,5200],[-3000,800,4800],[4200,-500,-3800],[-5500,400,800],
+        [7200,100,-2200],[-3200,1100,6800],[600,-1300,-6200],[8000,-300,4000],
+        [-7000,-400,-5000],[2800,1200,-8000]
+    ];
+    var cls=[[4000,300,-4500],[-5000,200,3200],[2500,-700,5800],[-2000,900,-6000],[6500,-100,1800],[-3500,-600,-3500],[4500,700,4000],[-6000,200,-2000],[1200,-1000,5200],[-3000,800,4800],[4200,-500,-3800],[-5500,400,800],[7200,100,-2200],[-3200,1100,6800],[600,-1300,-6200],[8000,-300,4000],[-7000,-400,-5000],[2800,1200,-8000]];
+    cls.forEach(function(p) {
+        var sp=55+Math.random()*80, cv=[], cb=[];
+        for (var i=0;i<650;i++){var r=Math.cbrt(Math.random())*sp,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1); cv.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        for (var i=0;i<110;i++){var r=Math.cbrt(Math.random())*sp*0.3,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1); cb.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        var sp=55+Math.random()*80,cv=[],cb=[];
+        for (var i=0;i<650;i++){var r=Math.cbrt(Math.random())*sp,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);cv.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        for (var i=0;i<110;i++){var r=Math.cbrt(Math.random())*sp*0.3,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);cb.push(p[0]+r*Math.sin(ph)*Math.cos(th),p[1]+r*Math.sin(ph)*Math.sin(th),p[2]+r*Math.cos(ph));}
+        addPts(cv, 0xfff5e0, 4.8, 0.55, spCl);
+        addPts(cb, 0xffffff, 2.2, 0.92, null);
+    });
+
+    // ── CHAMPS D'ASTEROIDES ─────────────────────────────
+    // Distribues partout dans l'espace, formes variees
+    var asteroidFields = [
+        { c:[3000,100,1500],   type:'spiral', arms:2, rMax:320, n:3500 },
+        { c:[-4000,-200,3000], type:'cloud',  spread:280, n:2800 },
+@@ -342,75 +272,175 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+        { c:[8500,-200,3500],  type:'cloud',  spread:260, n:2000 },
+        { c:[-7500,300,-3000], type:'spiral', arms:1, rMax:300, n:2600 }
+    ];
+
+    asteroidFields.forEach(function(f) {
+        var av=[], abv=[];
+        var av=[],abv=[];
+        if (f.type==='spiral') {
+            for (var arm=0;arm<f.arms;arm++) {
+                var ao=(arm/f.arms)*Math.PI*2;
+                for (var i=0;i<Math.floor(f.n/f.arms);i++) {
+                    var t=i/Math.floor(f.n/f.arms);
+                    var angle=ao+t*Math.PI*4+(Math.random()-0.5)*0.5;
+                    var r=25+t*f.rMax+(Math.random()-0.5)*35;
+                    av.push(f.c[0]+Math.cos(angle)*r,(Math.random()-0.5)*20,f.c[2]+Math.sin(angle)*r);
+                }
+            }
+            // Quelques gros fragments
+            for (var i=0;i<40;i++){var a=Math.random()*Math.PI*2,r=20+Math.random()*f.rMax*0.7; abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*12,f.c[2]+Math.sin(a)*r);}
+            for (var arm=0;arm<f.arms;arm++) { var ao=(arm/f.arms)*Math.PI*2; for (var i=0;i<Math.floor(f.n/f.arms);i++){var t=i/Math.floor(f.n/f.arms),angle=ao+t*Math.PI*4+(Math.random()-0.5)*0.5,r=25+t*f.rMax+(Math.random()-0.5)*35;av.push(f.c[0]+Math.cos(angle)*r,(Math.random()-0.5)*20,f.c[2]+Math.sin(angle)*r);} }
+            for (var i=0;i<40;i++){var a=Math.random()*Math.PI*2,r=20+Math.random()*f.rMax*0.7;abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*12,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='cloud') {
+            for (var i=0;i<f.n;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*f.spread; av.push(f.c[0]+r*Math.sin(ph)*Math.cos(th)*1.7,f.c[1]+r*Math.sin(ph)*Math.sin(th)*0.4,f.c[2]+r*Math.cos(ph)*1.4);}
+            for (var i=0;i<45;i++){var a=Math.random()*Math.PI*2,r=Math.random()*f.spread*0.7; abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*30,f.c[2]+Math.sin(a)*r);}
+            for (var i=0;i<f.n;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*f.spread;av.push(f.c[0]+r*Math.sin(ph)*Math.cos(th)*1.7,f.c[1]+r*Math.sin(ph)*Math.sin(th)*0.4,f.c[2]+r*Math.cos(ph)*1.4);}
+            for (var i=0;i<45;i++){var a=Math.random()*Math.PI*2,r=Math.random()*f.spread*0.7;abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*30,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='ring') {
+            for (var i=0;i<f.n;i++){var a=Math.random()*Math.PI*2,u=Math.random()+Math.random(),r=f.rMin+(u<1?u:2-u)*(f.rMax-f.rMin); av.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*15+Math.cos(a)*r*Math.tan(0.4)*0.2,f.c[2]+Math.sin(a)*r);}
+            for (var i=0;i<35;i++){var a=Math.random()*Math.PI*2,r=f.rMin+Math.random()*(f.rMax-f.rMin); abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*8,f.c[2]+Math.sin(a)*r);}
+            for (var i=0;i<f.n;i++){var a=Math.random()*Math.PI*2,u=Math.random()+Math.random(),r=f.rMin+(u<1?u:2-u)*(f.rMax-f.rMin);av.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*15+Math.cos(a)*r*Math.tan(0.4)*0.2,f.c[2]+Math.sin(a)*r);}
+            for (var i=0;i<35;i++){var a=Math.random()*Math.PI*2,r=f.rMin+Math.random()*(f.rMax-f.rMin);abv.push(f.c[0]+Math.cos(a)*r,f.c[1]+(Math.random()-0.5)*8,f.c[2]+Math.sin(a)*r);}
+        } else if (f.type==='trail') {
+            for (var i=0;i<f.n;i++){var t=(i/f.n)-0.5,x=t*f.len+(Math.random()-0.5)*100; av.push(f.c[0]+x,f.c[1]+(Math.random()-0.5)*55+Math.abs(x)*0.04,f.c[2]+(Math.random()-0.5)*100);}
+            for (var i=0;i<f.n;i++){var t=(i/f.n)-0.5,x=t*f.len+(Math.random()-0.5)*100;av.push(f.c[0]+x,f.c[1]+(Math.random()-0.5)*55+Math.abs(x)*0.04,f.c[2]+(Math.random()-0.5)*100);}
+        }
+        addPts(av,  0xb0a090, 0.9, 0.52, null, THREE.NormalBlending);
+        addPts(av, 0xb0a090, 0.9, 0.52, null, THREE.NormalBlending);
+        if (abv.length>0) addPts(abv, 0xddd0be, 3.8, 0.72, null, THREE.NormalBlending);
+        // Etoile au centre du champ
+        addPts([f.c[0],f.c[1],f.c[2]], 0xfff8e0, 18, 0.85, mkSp(255,248,220,0.05));
+    });
+
+    // ── ETOILES FILANTES ────────────────────────────────
+    for (var i=0;i<40;i++) {
+        var x=(Math.random()-0.5)*30000,y=(Math.random()-0.5)*15000,z=(Math.random()-0.5)*30000;
+        var len=120+Math.random()*350;
+        var dx=Math.random()-0.5,dy=(Math.random()-0.5)*0.2,dz=Math.random()-0.5;
+        var dn=Math.sqrt(dx*dx+dy*dy+dz*dz);dx/=dn;dy/=dn;dz/=dn;
+        var geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,y,z),new THREE.Vector3(x+dx*len,y+dy*len,z+dz*len)]);
+        scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.15+Math.random()*0.40,depthWrite:false})));
+    // Les etoiles filantes sont generees dynamiquement dans animate()
+    // On en spawn quelques-unes au depart
+    for (var i=0;i<8;i++) spawnShootingStar();
+}
+
+// ════════════════════════════════════════════════════════
+//  ETOILES FILANTES ANIMEES
+// ════════════════════════════════════════════════════════
+function spawnShootingStar() {
+    // Point de depart aleatoire dans une grande sphere
+    var th  = Math.random()*Math.PI*2;
+    var ph  = Math.acos(2*Math.random()-1);
+    var r   = 4000 + Math.random()*12000;
+    var x   = r*Math.sin(ph)*Math.cos(th);
+    var y   = r*Math.sin(ph)*Math.sin(th);
+    var z   = r*Math.cos(ph);
+
+    // Direction aleatoire
+    var dx=Math.random()-0.5, dy=(Math.random()-0.5)*0.4, dz=Math.random()-0.5;
+    var dn=Math.sqrt(dx*dx+dy*dy+dz*dz); dx/=dn; dy/=dn; dz/=dn;
+
+    var len   = 180 + Math.random()*320;
+    var speed = 60  + Math.random()*120;  // unites par frame (rapide)
+    var life  = 1.0;
+    var decay = 0.008 + Math.random()*0.012; // vitesse de disparition
+
+    var pts = [
+        new THREE.Vector3(x, y, z),
+        new THREE.Vector3(x + dx*len, y + dy*len, z + dz*len)
+    ];
+    var geo  = new THREE.BufferGeometry().setFromPoints(pts);
+    var mat  = new THREE.LineBasicMaterial({
+        color: 0xffffff, transparent: true,
+        opacity: 0.7 + Math.random()*0.3, depthWrite: false
+    });
+    var line = new THREE.Line(geo, mat);
+    universeGroup.add(line);
+
+    shootingStars.push({
+        line: line, geo: geo,
+        x:x, y:y, z:z,
+        dx:dx, dy:dy, dz:dz,
+        len:len, speed:speed,
+        life:life, decay:decay,
+        mat:mat
+    });
+}
+
+function updateShootingStars() {
+    for (var i = shootingStars.length-1; i >= 0; i--) {
+        var s = shootingStars[i];
+        s.life -= s.decay;
+        s.x += s.dx * s.speed;
+        s.y += s.dy * s.speed;
+        s.z += s.dz * s.speed;
+
+        // Mettre a jour la geometrie
+        var positions = s.geo.attributes.position.array;
+        positions[0] = s.x;
+        positions[1] = s.y;
+        positions[2] = s.z;
+        positions[3] = s.x + s.dx*s.len;
+        positions[4] = s.y + s.dy*s.len;
+        positions[5] = s.z + s.dz*s.len;
+        s.geo.attributes.position.needsUpdate = true;
+        s.mat.opacity = Math.max(0, s.life) * 0.9;
+
+        if (s.life <= 0) {
+            universeGroup.remove(s.line);
+            shootingStars.splice(i, 1);
+        }
+    }
+    // Spawn aleatoire : environ 1 etoile filante toutes les 3 secondes
+    if (Math.random() < 0.006) spawnShootingStar();
+}
+
+// ════════════════════════════════════════════════════════
+//  NOYAU ORIGINAL — code original intact
+//  NOYAU — VIP sphere dense (inchange) +
+//  photos non-VIP en 2 BRAS SPIRAUX autour du noyau
 // ════════════════════════════════════════════════════════
 var noyauGroup = new THREE.Group();
 scene.add(noyauGroup);
 
 function buildNoyau() {
-    // Lueur centrale — donne l'impression d'un noyau vivant
-    var spGlow = mkSp(180,220,255,0.04);
-    var gv=[];for(var i=0;i<3000;i++){var th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*90;gv.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th)*0.7,r*Math.cos(ph));}
-    var gGeo=new THREE.BufferGeometry();gGeo.setAttribute('position',new THREE.Float32BufferAttribute(gv,3));
-    noyauGroup.add(new THREE.Points(gGeo,new THREE.PointsMaterial({color:0xaaddff,size:60,transparent:true,opacity:0.025,map:spGlow,sizeAttenuation:true,depthWrite:false,blending:THREE.AdditiveBlending})));
-
-    // Photos — code original intact
     var loader = new THREE.TextureLoader();
-    var maxA   = renderer.capabilities.getMaxAnisotropy();
+    var maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
     for (var i=0;i<600;i++) {
-        var size,url,isVIP;
-        if(i<150){size=24;isVIP=true;url=(i<mesPhotos.length)?mesPhotos[i]:'https://picsum.photos/id/'+(i+100)+'/500/500';}
-        else{size=14;isVIP=false;url='https://picsum.photos/id/'+(i+100)+'/200/200';}
-        var tex=loader.load(url);
-        tex.anisotropy=maxA;tex.minFilter=THREE.LinearFilter;
-        var mat=new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,transparent:!isVIP,opacity:isVIP?1:0.7});
+        var size, textureURL, isVIP;
+        if (i<150) { size=24; isVIP=true; textureURL=(i<mesPhotos.length)?mesPhotos[i]:'https://picsum.photos/id/'+(i+100)+'/500/500'; }
+        else       { size=14; isVIP=false; textureURL='https://picsum.photos/id/'+(i+100)+'/200/200'; }
+
+        if (i<150) {
+            // ── VIP : sphere dense au centre — code original inchange ──
+            size=24; isVIP=true;
+            textureURL=(i<mesPhotos.length)?mesPhotos[i]:'https://picsum.photos/id/'+(i+100)+'/500/500';
+        } else {
+            size=14; isVIP=false;
+            textureURL='https://picsum.photos/id/'+(i+100)+'/200/200';
+        }
+
+        var texture=loader.load(textureURL);
+        texture.anisotropy=maxAnisotropy; texture.minFilter=THREE.LinearFilter;
+        var mat=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,transparent:!isVIP,opacity:isVIP?1:0.7});
+        texture.anisotropy=maxAnisotropy;
+        texture.minFilter=THREE.LinearFilter;
+
+        var mat=new THREE.MeshBasicMaterial({
+            map:texture, side:THREE.DoubleSide,
+            transparent:!isVIP, opacity:isVIP?1:0.75
+        });
         var plane=new THREE.Mesh(new THREE.PlaneGeometry(size,size),mat);
-        if(isVIP){
+
+        if (isVIP) {
             var dist=Math.random()*120,t=Math.random()*Math.PI*2,p=Math.random()*Math.PI;
             plane.position.set(dist*Math.sin(p)*Math.cos(t),dist*Math.sin(p)*Math.sin(t),dist*Math.cos(p));
+            // Sphere dense — code original inchange
+            var dist=Math.random()*120;
+            var t=Math.random()*Math.PI*2;
+            var p=Math.random()*Math.PI;
+            plane.position.set(
+                dist*Math.sin(p)*Math.cos(t),
+                dist*Math.sin(p)*Math.sin(t),
+                dist*Math.cos(p)
+            );
             plane.lookAt(0,0,0);
-        }else{
-            var angle=Math.random()*Math.PI*2,radius=200+Math.random()*350;
-            plane.position.x=Math.cos(angle)*radius;plane.position.z=Math.sin(angle)*radius;
-            plane.position.y=(Math.random()-0.5)*40;plane.lookAt(0,plane.position.y,0);
-        }
-        plane.userData={hd:url};
-        noyauGroup.add(plane);allMeshes.push(plane);
-    }
-}
 
+        } else {
+            var angle=Math.random()*Math.PI*2,radius=200+Math.random()*350;
+            plane.position.x=Math.cos(angle)*radius;
+            plane.position.z=Math.sin(angle)*radius;
+            plane.position.y=(Math.random()-0.5)*40;
+            plane.lookAt(0,plane.position.y,0);
+            // ── ANNEAUX CONCENTRIQUES autour du noyau ─────────
+            // 450 photos en 6 anneaux de 75 photos chacun
+            // style anneaux de Saturne mais avec des photos
+            var idx       = i - 150;
+            var ringIndex = Math.floor(idx / 75);
+            if (ringIndex > 5) ringIndex = 5;
+            var posInRing = idx % 75;
+
+            // Rayon de chaque anneau — espaces regulierement
+            var radii = [195, 275, 355, 438, 522, 620];
+            var radius = radii[ringIndex];
+
+            // Angle uniformement reparti + micro-variation pour eviter l effet grille
+            var angle = (posInRing / 75.0) * Math.PI * 2 + (Math.random()-0.5)*0.06;
+
+            // Chaque anneau a une inclinaison differente — donne un vrai relief 3D
+            var tilts = [0.0, 0.10, -0.07, 0.13, -0.09, 0.05];
+            var tilt  = tilts[ringIndex];
+
+            var x = Math.cos(angle) * radius;
+            var z = Math.sin(angle) * radius;
+            // Y = inclinaison de l anneau + petit bruit
+            var y = Math.sin(angle) * radius * Math.tan(tilt) + (Math.random()-0.5)*6;
+
+            plane.position.set(x, y, z);
+            plane.lookAt(0, 0, 0);
+        }
+
+        plane.userData={hd:textureURL};
+        noyauGroup.add(plane);
+        allMeshes.push(plane);
+@@ -422,49 +452,34 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
 // ════════════════════════════════════════════════════════
-//  START
-// ════════════════════════════════════════════════════════
-scene.add(new THREE.AmbientLight(0x111122, 1.5));
-buildUniverse();
+function buildSaturn() {
+    var grp = new THREE.Group();
+
+    var cvs=document.createElement('canvas'); cvs.width=512; cvs.height=256;
+    var ctx=cvs.getContext('2d');
+    var bg=ctx.createLinearGradient(0,0,0,256);
+    bg.addColorStop(0,'#4a3820');bg.addColorStop(0.15,'#a87840');
+    bg.addColorStop(0.30,'#c49840');bg.addColorStop(0.50,'#d8a840');
+    bg.addColorStop(0.70,'#c49840');bg.addColorStop(0.85,'#a87840');bg.addColorStop(1,'#4a3820');
+    bg.addColorStop(0,'#4a3820');bg.addColorStop(0.15,'#a87840');bg.addColorStop(0.30,'#c49840');bg.addColorStop(0.50,'#d8a840');bg.addColorStop(0.70,'#c49840');bg.addColorStop(0.85,'#a87840');bg.addColorStop(1,'#4a3820');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,512,256);
+    [[0.06,0.04,0.4],[0.18,0.06,0.3],[0.34,0.08,0.35],[0.50,0.06,0.28],[0.66,0.08,0.35],[0.80,0.06,0.3],[0.90,0.04,0.4]].forEach(function(b){
+        var g2=ctx.createLinearGradient(0,b[0]*256,0,(b[0]+b[1])*256);
+        g2.addColorStop(0,'rgba(40,22,2,0)');g2.addColorStop(0.5,'rgba(40,22,2,'+b[2]+')');g2.addColorStop(1,'rgba(40,22,2,0)');
+        ctx.fillStyle=g2; ctx.fillRect(0,b[0]*256,512,b[1]*256);
+    });
+
+    var sphere=new THREE.Mesh(new THREE.SphereGeometry(80,64,64),new THREE.MeshPhongMaterial({map:new THREE.CanvasTexture(cvs),shininess:5}));
+    grp.add(sphere);
+
+    var rc=document.createElement('canvas'); rc.width=256; rc.height=4;
+    var rctx=rc.getContext('2d');
+    var rg=rctx.createLinearGradient(0,0,256,0);
+    rg.addColorStop(0,'rgba(180,150,70,0)');rg.addColorStop(0.06,'rgba(200,170,85,0.45)');
+    rg.addColorStop(0.20,'rgba(225,195,105,0.82)');rg.addColorStop(0.35,'rgba(240,210,120,0.88)');
+    rg.addColorStop(0.45,'rgba(200,175,90,0.68)');rg.addColorStop(0.50,'rgba(90,70,30,0.15)');
+    rg.addColorStop(0.55,'rgba(200,175,90,0.68)');rg.addColorStop(0.70,'rgba(225,195,105,0.82)');
+    rg.addColorStop(0.84,'rgba(195,165,80,0.55)');rg.addColorStop(0.94,'rgba(165,138,62,0.28)');
+    rg.addColorStop(1,'rgba(140,115,50,0)');
+    rg.addColorStop(0,'rgba(180,150,70,0)');rg.addColorStop(0.06,'rgba(200,170,85,0.45)');rg.addColorStop(0.20,'rgba(225,195,105,0.82)');rg.addColorStop(0.35,'rgba(240,210,120,0.88)');rg.addColorStop(0.45,'rgba(200,175,90,0.68)');rg.addColorStop(0.50,'rgba(90,70,30,0.15)');rg.addColorStop(0.55,'rgba(200,175,90,0.68)');rg.addColorStop(0.70,'rgba(225,195,105,0.82)');rg.addColorStop(0.84,'rgba(195,165,80,0.55)');rg.addColorStop(0.94,'rgba(165,138,62,0.28)');rg.addColorStop(1,'rgba(140,115,50,0)');
+    rctx.fillStyle=rg; rctx.fillRect(0,0,256,4);
+    var rTex=new THREE.CanvasTexture(rc);
+
+    [[98,112,0.28],[115,162,0.88],[165,198,0.68],[202,212,0.22]].forEach(function(rd){
+        var rGeo=new THREE.RingGeometry(rd[0],rd[1],128,1);
+        var uv=rGeo.attributes.uv,pos=rGeo.attributes.position,v3=new THREE.Vector3();
+        for(var j=0;j<pos.count;j++){v3.fromBufferAttribute(pos,j);uv.setXY(j,(v3.length()-rd[0])/(rd[1]-rd[0]),0.5);}
+        var rm=new THREE.Mesh(rGeo,new THREE.MeshBasicMaterial({map:rTex,side:THREE.DoubleSide,transparent:true,opacity:rd[2],depthWrite:false}));
+        rm.rotation.x=Math.PI*0.43; grp.add(rm);
+    });
+
+    grp.add(new THREE.Mesh(new THREE.SphereGeometry(88,32,32),new THREE.MeshBasicMaterial({color:0xc89040,transparent:true,opacity:0.05,side:THREE.BackSide,depthWrite:false})));
+
+    var sun=new THREE.DirectionalLight(0xfff5e0,1.8); sun.position.set(600,300,400); scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x14142a,2.2));
+
+    // Saturne loin dans l'univers — tu peux y voler
+    grp.position.set(-2800, 200, -1500);
+    grp.rotation.z=0.06;
+    scene.add(grp);
+@@ -478,21 +493,24 @@ <h2 style="color:#00d4ff;margin-top:0;">THE CORE / LE NOYAU</h2>
+var saturnSphere = buildSaturn();
 buildNoyau();
 
-function animate(){
+// ── BOUCLE ────────────────────────────────────────────
+var clock = new THREE.Clock();
+function animate() {
     requestAnimationFrame(animate);
+
+    // Navigation
     applyNav();
-    camera.rotation.y=camYaw;
-    camera.rotation.x=camPitch;
-    noyauGroup.rotation.y+=0.0008;
-    renderer.render(scene,camera);
+    applyCameraRotation();
+
+    // Noyau tourne lentement
+    // Noyau tourne sur lui-meme
+    noyauGroup.rotation.y += 0.0008;
+
+    // Saturne tourne sur elle-meme
+    // Saturne tourne
+    if (saturnSphere) saturnSphere.rotation.y += 0.0012;
+
+    // Univers de fond tourne tres lentement (sensation de mouvement cosmique)
+    universeGroup.rotation.y += 0.00008;
+    universeGroup.rotation.x += 0.000025;
+
+    // Etoiles filantes animees
+    updateShootingStars();
+
+    renderer.render(scene, camera);
 }
 animate();
-
-window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
-</script>
-</body>
-</html>
